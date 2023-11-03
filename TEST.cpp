@@ -8,8 +8,8 @@ int main()
 {
     PhaseNode EmptyNode;
     PhaseSimulationMesh Box(EmptyNode);
-    Box.findNode(23,32,0).updateNode(12345);
-    Box.findNode(23,32,0).showNode();
-    Box.showProperties();
+    Box.findNode(3,1,0).updateNode(12345);
+    Box.findNode(3,1,0).showNode();
+    Box.showNodeProp(1);
     return 0;
 }

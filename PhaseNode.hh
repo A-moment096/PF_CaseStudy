@@ -15,10 +15,11 @@ std::mt19937 generator;
 
 class PhaseNode{
     private:
-        long double Concentration=0.0;
-        long double OrderParameter=0.0;
+        std::vector<long double> NodeProperties{298.15,0.0,0.0};
+        long double& Temperature = NodeProperties.at(0);
+        long double& Concentration = NodeProperties.at(1);
+        long double& OrderParameter = NodeProperties.at(2);
         // long double PhaseFraction;
-        long double Temperature=298.15;
     public:
 // Construct & Deconstruct Functions
         PhaseNode(){}; //Accept Default Parameters
@@ -26,6 +27,8 @@ class PhaseNode{
         PhaseNode(const PhaseNode &NewNode); //Node from Other Node
         ~PhaseNode(){};
 // Manipulate Methods
+        long double getProperties(unsigned index);
+
         void showNode();
         void updateNode(long double Node);
 
@@ -59,6 +62,9 @@ void PhaseNode::showNode(){
     std::cout<<"Temperature:\t\t"<<Temperature<<std::endl;
     std::cout<<"Concentration:\t\t"<<Concentration<<std::endl;
     std::cout<<"OrderParameter:\t\t"<<OrderParameter<<std::endl;
+}
+long double PhaseNode::getProperties(unsigned index){
+    return NodeProperties.at(index);
 }
 
 //void PhaseNode::ParaNormDisInitial(long double mu, long double sigma){
