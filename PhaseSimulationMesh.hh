@@ -73,9 +73,9 @@ void PhaseSimulationMesh::showMeshProp(){
 
 void PhaseSimulationMesh::showNodeProp(unsigned index){
     for(long i = 0; i < getNumNodes(); i++){
-        std::cout<<SimuNodes.at(i).getProperties(index);
+        std::cout<<SimuNodes.at(i).getProperties(index)<<" ";
         if(i%BoxX==BoxX-1)std::cout<<std::endl;
-        if(i%BoxX*BoxY == BoxX*BoxY-1)std::cout<<"\n"<<std::endl;
+        if(i%(BoxX*BoxY) == BoxX*BoxY-1)std::cout<<std::endl;
     }
 }
 
