@@ -16,19 +16,19 @@ class PhaseSimulationMesh{
         std::vector<PhaseNode> SimuNodes;
 
     public:
-        PhaseSimulationMesh(){};
-        PhaseSimulationMesh(PhaseNode Nodes);
-        PhaseSimulationMesh(std::vector<long> SizeInfo, PhaseNode Nodes);
+        PhaseSimulationMesh(){}; // initial with default size, without nodes
+        PhaseSimulationMesh(PhaseNode Nodes); // initial with nodes and default size
+        PhaseSimulationMesh(std::vector<long> SizeInfo, PhaseNode Nodes); // initial with size and nodes
         ~PhaseSimulationMesh(){};
 
-        long getNumNodes(); // Return the Number of Nodes in Mesh
-        void fillNodes(PhaseNode Nodes);
+        long getNumNodes(); // return the number of nodes in mesh
+        void fillNodes(PhaseNode Nodes); // fill mesh with nodes 
 
-        void Ave_Dis_Noise(long double Ave, long double Var);
-        PhaseNode& findNode(long X, long Y, long Z);
+/**/    void Ave_Dis_Noise(long double Ave, long double Var); // add noise to the nodes (concentration) with average distribution
+        PhaseNode& findNode(long X, long Y, long Z); // find node in the mesh according to the coordinates
 
-        void showMeshProp();
-        void showNodeProp(unsigned index);
+        void showMeshProp(); // show the basic information of the mesh
+        void showNodesProp(unsigned index); // show one of the properties of the nodes inside the mesh
 };
 
         
@@ -71,7 +71,7 @@ void PhaseSimulationMesh::showMeshProp(){
     std::cout<<"Number of Nodes:\t"<<getNumNodes()<<std::endl;
 }
 
-void PhaseSimulationMesh::showNodeProp(unsigned index){
+void PhaseSimulationMesh::showNodesProp(unsigned index){
     for(long i = 0; i < getNumNodes(); i++){
         std::cout<<SimuNodes.at(i).getProperties(index)<<" ";
         if(i%BoxX==BoxX-1)std::cout<<std::endl;
