@@ -20,8 +20,6 @@ class PhaseGrain{
         PhaseGrain(PhaseSimulationMesh mesh);
         PhaseGrain(unsigned num, PhaseSimulationMesh mesh);
         ~PhaseGrain(){};
-
-        
 };
 
 PhaseGrain::PhaseGrain(PhaseSimulationMesh mesh){
