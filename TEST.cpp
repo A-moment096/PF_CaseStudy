@@ -5,10 +5,13 @@ using std::endl;
 using std::vector;
 
 int main(){
-    PhaseNode EmptyNode;
-    PhaseSimulationMesh Box(std::vector<long> {16,3,2},EmptyNode);
-    Box.findNode(3,1,0).updateNode(std::vector<long double> {257,10.4,9});
-    Box.findNode(3,1,0).showNode();
-    Box.showNodesProp(1);
+    PhaseSimulationMesh Box(std::vector<long> {16,3,2});
+    vector<PhaseNode> nodes(3);
+    SpinodalSolver Solver;
+    PhaseDomain NewDomain(nodes,Box);
+    NewDomain.showBaseMeshProp();
+    NewDomain.showGrainProp();
+    Solver.showBaseMeshProp();
+    Solver.showGrainProp();
     return 0;
 }
