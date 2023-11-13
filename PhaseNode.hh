@@ -74,21 +74,12 @@ inline PhaseNode::PhaseNode( const PhaseNode &NewNode){
     PhsVect = NewNode.PhsVect;
     Temperature = NewNode.Temperature;
 }
-PhaseNode& PhaseNode::operator= (const PhaseNode NewNode){
-    Temperature = NewNode.Temperature;
-    Concentration = NewNode.Concentration;
-    OrderParameter = NewNode.OrderParameter;
-    return *this;
-}
 
 
 // void PhaseNode::ConInitial_AveDis(double Ave, double Var){
 //     Concentration = Ave +Var-2*double(rand()%(1000*int(Var)))/1000;
 // }
 
-void PhaseNode::updateNode(unsigned which, long double NewProp){
-    NodeProperties.at(which) = NewProp;
-}
 /*************************************************************/
 void PhaseNode::showNode(){
     std::cout<<"Node Information:\n";
