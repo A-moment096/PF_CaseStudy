@@ -6,9 +6,8 @@
 #include <vector>
 #include "PhaseNode.hh"
 #include "PhaseSimulationMesh.hh"
-#include "PhaseGrain.hh"
 
-class PhaseSolver: public PhaseGrain
+class PhaseSolver
 {
 private:
     /* data */
