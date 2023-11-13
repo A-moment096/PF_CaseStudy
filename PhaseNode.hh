@@ -5,20 +5,23 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+<<<<<<< HEAD
 #include <random>
 
 #include "PhaseEntry.hh"
 #include "ConEntry.hh"
+=======
+
+>>>>>>> 90a66cfd1410eb594c1bec8af8f00122f719aabe
 /***********************************************
 This is PhaseNode Class, Every method is focused
 only on one node (or say, point) in simulation
 region (or, box).
 ************************************************/
-std::mt19937 generator;
-
 
 class PhaseNode{
     private:
+<<<<<<< HEAD
         unsigned Num_Grain = 1;
         unsigned Num_Elemt = 1;
         std::vector<ConEntry> ConVect;
@@ -55,14 +58,36 @@ class PhaseNode{
             Temperature = NewNode.Temperature;
             return *this;
         }
+=======
+        std::vector<long double> NodeProperties{298.15,0.0,0.0};
+        long double& Temperature = NodeProperties.at(0);
+        long double& Concentration = NodeProperties.at(1);
+        long double& OrderParameter = NodeProperties.at(2);
+    public:
+// Construct & Deconstruct Functions
+        PhaseNode(){}; // accept default parameters
+        PhaseNode(const PhaseNode &NewNode); // node from other node
+        PhaseNode(std::vector<long double> NodeInfo); //node from a vector
+        ~PhaseNode(){};
+
+        PhaseNode& operator= (const PhaseNode NewNode);
+>>>>>>> 90a66cfd1410eb594c1bec8af8f00122f719aabe
 // Manipulate Methods
         void showNode();
+<<<<<<< HEAD
         
         void updateNode(double Node){};
 
         // void ConInitial_AveDis(double Ave, double Var); //Parameter Average Distribution Initialization
         // void ParaNormDisInitial(double sigma, double mu);
 };
+=======
+        void updateNode(std::vector<long double> NewNode ); // update every node properties
+        void updateNode(unsigned which, long double NewProp); // update one properties with its address
+
+        void ConInitial_AveDis(long double Ave, long double Var); // parameter average distribution initialization
+} DefaultNode ;
+>>>>>>> 90a66cfd1410eb594c1bec8af8f00122f719aabe
 
 
 // PhaseNode::PhaseNode(std::vector<double> NodeInfo){
@@ -76,11 +101,22 @@ inline PhaseNode::PhaseNode( const PhaseNode &NewNode){
     PhsVect = NewNode.PhsVect;
     Temperature = NewNode.Temperature;
 }
+PhaseNode& PhaseNode::operator= (const PhaseNode NewNode){
+    Temperature = NewNode.Temperature;
+    Concentration = NewNode.Concentration;
+    OrderParameter = NewNode.OrderParameter;
+    return *this;
+}
+
 
 // void PhaseNode::ConInitial_AveDis(double Ave, double Var){
 //     Concentration = Ave +Var-2*double(rand()%(1000*int(Var)))/1000;
 // }
 
+void PhaseNode::updateNode(unsigned which, long double NewProp){
+    NodeProperties.at(which) = NewProp;
+}
+/*************************************************************/
 void PhaseNode::showNode(){
     std::cout<<"Node Information:\n";
     std::cout<<"Temperature:\t\t"<<Temperature<<"\n";
@@ -97,6 +133,7 @@ void PhaseNode::showNode(){
     std::cout<<std::endl;
 }
 
+<<<<<<< HEAD
 //void PhaseNode::ParaNormDisInitial(double mu, double sigma){
 //    while(true){
 //        std::normal_distribution<double> randnum(mu,sigma);
@@ -108,5 +145,14 @@ void PhaseNode::showNode(){
 //    }
 //}
 
+=======
+std::vector<long double> PhaseNode::getProperties(){
+    return NodeProperties;
+}
+
+long double PhaseNode::getProperties(unsigned index){
+    return NodeProperties.at(index);
+}
+>>>>>>> 90a66cfd1410eb594c1bec8af8f00122f719aabe
 
 #endif
