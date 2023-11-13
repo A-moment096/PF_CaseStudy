@@ -4,11 +4,13 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-int main(){
-    PhaseNode EmptyNode;
-    PhaseSimulationMesh Box(std::vector<long> {16,3,2},EmptyNode);
-    Box.findNode(3,1,0).updateNode(std::vector<long double> {257,10.4,9});
-    Box.findNode(3,1,0).showNode();
-    Box.showNodesProp(1);
+int main()
+{
+    PhaseNode EmptyNode(3);
+    PhaseSimulationMesh Box(EmptyNode);
+    // Box.findNode(23,32,0).updateNode(12345);
+    // Box.findNode(23,32,0).showNode();
+    // Box.showProperties();
+    EmptyNode.showNode();
     return 0;
 }
