@@ -5,7 +5,6 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include <random>
 
 #include "PhaseEntry.hh"
 #include "ConEntry.hh"
@@ -15,21 +14,29 @@ only on one node (or say, point) in simulation
 region (or, box).
 ************************************************/
 
+enum WHICHPARA {CON,GRAIN};
+
 class PhaseNode{
     private:
-        unsigned Num_Grain = 1;
         unsigned Num_Elemt = 1;
+        unsigned Num_Grain = 1;
         std::vector<ConEntry> ConVect;
         std::vector<PhaseEntry> PhsVect;
         double Temperature = 298.15;
     public:
+        PhaseNode* Up = this;
+        PhaseNode* Down = this;
+        PhaseNode* Forward = this;
+        PhaseNode* Backward = this;
+        PhaseNode* Left = this;
+        PhaseNode* Right = this;
 // Construct & Deconstruct Functions
         PhaseNode(){
             PhsVect.push_back(DefaultPhsEnt);
             ConVect.push_back(DefaultConEnt);
         }; //Accept Default Parameters
     
-        PhaseNode(unsigned n_grain, unsigned n_elemt):Num_Elemt(n_elemt),Num_Grain(n_grain){
+        PhaseNode(unsigned n_elemt, unsigned n_grain):Num_Elemt(n_elemt),Num_Grain(n_grain){
             for (int i = 0; i < Num_Elemt; i++)
             {
                 ConVect.push_back(DefaultConEnt);
@@ -42,43 +49,62 @@ class PhaseNode{
             }
         }
 
-        PhaseNode(unsigned n_grain):PhaseNode(n_grain,1){}
+        PhaseNode(unsigned n_grain):PhaseNode(1,n_grain){}
 
-        PhaseNode(std::vector<double> NodeInfo); //Node from a vector
-        PhaseNode(const PhaseNode &NewNode); //Node from Other Node
-        ~PhaseNode(){};
+        PhaseNode(const PhaseNode &NewNode){
+            ConVect = NewNode.ConVect;
+            PhsVect = NewNode.PhsVect;
+            Temperature = NewNode.Temperature;
+        } //Node from Other Node
         PhaseNode& operator= (const PhaseNode& NewNode){
             ConVect = NewNode.ConVect;
             PhsVect = NewNode.PhsVect;
             Temperature = NewNode.Temperature;
             return *this;
         }
+        ~PhaseNode(){};
 // Manipulate Methods
-        void showNode();
         
-        void updateNode(double Node){};
+        unsigned getNums(int which){
+            if(which == WHICHPARA::CON){
+                return Num_Elemt;
+            }
+            if(which == WHICHPARA::GRAIN){
+                return Num_Grain;
+            }
+        }
 
+        std::vector<double> getProperties(int which){
+            std::vector<double> temp;
+            if(which == WHICHPARA::CON){ // concentration
+                for (int i = 0; i < Num_Elemt; i++)
+                {
+                    temp.push_back(ConVect.at(i).getCon());
+                }
+                return temp;
+            }
+            if(which == WHICHPARA::GRAIN){ // grain order parameter
+                for (int i = 0; i < Num_Grain; i++)
+                {
+                    temp.push_back(PhsVect.at(i).getOrderPara());
+                }
+                return temp;
+            }
+            return temp;
+        }
+
+        void updateNode(unsigned which, unsigned index, double value){
+            if(which == WHICHPARA::CON){
+                ConVect.at(index).setCon(value);
+            }
+            if(which == WHICHPARA::GRAIN){
+                PhsVect.at(index).setOrderPara(value);
+            }
+        }
+
+        void showNode();
         // void ConInitial_AveDis(double Ave, double Var); //Parameter Average Distribution Initialization
-        // void ParaNormDisInitial(double sigma, double mu);
 };
-
-
-// PhaseNode::PhaseNode(std::vector<double> NodeInfo){
-//     Temperature = NodeInfo.at(0);
-//     Concentration = NodeInfo.at(1);
-//     OrderParameter = NodeInfo.at(1);
-// }
-
-inline PhaseNode::PhaseNode( const PhaseNode &NewNode){
-    ConVect = NewNode.ConVect;
-    PhsVect = NewNode.PhsVect;
-    Temperature = NewNode.Temperature;
-}
-
-
-// void PhaseNode::ConInitial_AveDis(double Ave, double Var){
-//     Concentration = Ave +Var-2*double(rand()%(1000*int(Var)))/1000;
-// }
 
 /*************************************************************/
 void PhaseNode::showNode(){
@@ -87,8 +113,6 @@ void PhaseNode::showNode(){
     std::cout<<"OrdParaIndex:\tOrderParameter:\t\tConIndex:\tConcentration:\n";
     for(int j = 0; j < Num_Grain; j++){
         for(int i = 0; i < Num_Elemt ; i++){
-            PhsVect.at(j).setOrderPara(double(j)/12+double(i)*0.3);
-            ConVect.at(i).setCon(double(i+5)/0.453-1-double(j));
             std::cout<<PhsVect.at(j).getindex()<<"\t\t"<<std::fixed<<std::setprecision(6)<<PhsVect.at(j).getOrderPara()<<"\t\t";
             std::cout<<ConVect.at(i).getindex()<<"\t\t"<<std::fixed<<std::setprecision(6)<<ConVect.at(i).getCon()<<"\n";
         }
@@ -96,17 +120,6 @@ void PhaseNode::showNode(){
     }
     std::cout<<std::endl;
 }
-
-//void PhaseNode::ParaNormDisInitial(double mu, double sigma){
-//    while(true){
-//        std::normal_distribution<double> randnum(mu,sigma);
-//        double r = randnum(generator);
-//        if(r > mu-3*sigma && r < mu+3*sigma){
-//            Concentration = r;
-//            break;
-//        }
-//    }
-//}
 
 
 #endif

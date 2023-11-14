@@ -4,28 +4,26 @@
 
 #include <iostream>
 #include <vector>
-#include "PhaseNode.hh"
 #include "PhaseSimulationMesh.hh"
 
-class PhaseSolver
+enum STENCILE{FIVEPOINT=5,NINEPOINT=9};
+class PhaseSolver : private PhaseSimulationMesh
 {
 private:
     /* data */
 public:
-    PhaseSolver();
-    ~PhaseSolver();
+    PhaseSolver(){}
+    ~PhaseSolver(){}
+    std::vector<double> Laplacian (int whichSTNCL, PhaseSimulationMesh mesh){
+        std::vector<double> result;
+        if(whichSTNCL = STENCILE::FIVEPOINT){
+            for(int i = 0; i < mesh.getNumNodes(); i++){
+                mesh.findNode(i)
+            }
+        }
+    }
+
 };
-
-PhaseSolver::PhaseSolver()
-{
-}
-
-PhaseSolver::~PhaseSolver()
-{
-}
-
-
-
 
 
 #endif
