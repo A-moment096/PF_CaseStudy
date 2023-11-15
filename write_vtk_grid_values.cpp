@@ -1,10 +1,13 @@
-void write_vtk_grid_values(int nx,int ny,double dx,double dy,int istep,std::vector<std::vector<double>> data)
+#include <fstream>
+#include <vector>
+
+void write_vtk_grid_values(int nx,int ny,double dx,double dy,int istep,std::vector<double> data)
 {
 	int nz = 1;
 	int npoin = nx*ny*nz;
 
 	char filename[128];
-	sprintf(filename,"L:\\Programme\\C++\\PhaseFieldModelling\\CaseStudy_2\\output\\Result\\time_%06d.vtk", istep);
+	sprintf(filename,"L:\\Programme\\C++\\PhaseFieldModelling\\CaseStudy_3\\output\\Result\\time_%06d.vtk", istep);
 
 	std::ofstream outfile;
 	outfile.open(filename);
@@ -28,9 +31,8 @@ void write_vtk_grid_values(int nx,int ny,double dx,double dy,int istep,std::vect
 	outfile<<"SCALARS CON  float  1\n";
 	outfile<<"LOOKUP_TABLE default\n";
 
-	for(int i=0;i<nx;i++)
-		for(int j=0;j<ny;j++)
-		outfile<<data[i][j]<<"\n";
+	for(int i=0;i<nx*ny;i++)
+		outfile<<data.at(i)<<"\n";
 
 	outfile.close();
 	

@@ -14,7 +14,7 @@ only on one node (or say, point) in simulation
 region (or, box).
 ************************************************/
 
-enum WHICHPARA {CON,GRAIN};
+enum WHICHPARA {CON,GRAIN,CUSTOM=99};
 
 class PhaseNode{
     private:
@@ -22,6 +22,7 @@ class PhaseNode{
         unsigned Num_Grain = 1;
         std::vector<ConEntry> ConVect;
         std::vector<PhaseEntry> PhsVect;
+        double CustomValue=0;
         double Temperature = 298.15;
     public:
         PhaseNode* Up = this;
@@ -90,6 +91,10 @@ class PhaseNode{
                 }
                 return temp;
             }
+            if(which == WHICHPARA::CUSTOM){
+                temp.push_back(CustomValue);
+                return temp;
+            }
             return temp;
         }
 
@@ -99,6 +104,9 @@ class PhaseNode{
             }
             if(which == WHICHPARA::GRAIN){
                 PhsVect.at(index).setOrderPara(value);
+            }
+            if(which == WHICHPARA::CUSTOM){
+                CustomValue = value;
             }
         }
 
