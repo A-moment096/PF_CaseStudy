@@ -73,6 +73,10 @@ class PhaseNode{
             if(which == WHICHPARA::GRAIN){
                 return Num_Grain;
             }
+            else{
+                return 99999;
+                throw std::invalid_argument("Unsuitable Argument");
+            }
         }
 
         std::vector<double> getProperties(int which){
@@ -100,6 +104,10 @@ class PhaseNode{
                 temp.at(0) = (CustomValue);
                 return temp;
             }
+            else{
+                throw std::invalid_argument("Unsuitable Argument");
+                return {};
+            }
         }
 
         void updateNode(unsigned which, unsigned index, double value){
@@ -116,7 +124,7 @@ class PhaseNode{
 
         void showNode();
         // void ConInitial_AveDis(double Ave, double Var); //Parameter Average Distribution Initialization
-};
+}DefaultNode;
 
 /*************************************************************/
 void PhaseNode::showNode(){

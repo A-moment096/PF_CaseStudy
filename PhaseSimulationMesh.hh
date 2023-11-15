@@ -8,6 +8,7 @@
 
 enum WHICHDIM{X,Y,Z};
 enum BOUNDCOND{PERIODIC,CONST,ADIABATIC};
+enum STENCILE{FIVEPOINT=5,NINEPOINT=9};
 
 
 class PhaseSimulationMesh{
@@ -26,20 +27,19 @@ class PhaseSimulationMesh{
     public:
 
         std::vector<std::vector<double>> MeshCon;
+        std::vector<std::vector<double>> MeshOrdPara;
         std::vector<double> MeshCstmVal;
 
         PhaseSimulationMesh(){} // initial with default size, without SimuNodes.at(i)s
 
-        PhaseSimulationMesh(std::vector<double> SizeInfo, PhaseNode Nodes){ // initial with size and SimuNodes.at(i)s
+        PhaseSimulationMesh(std::vector<double> SizeInfo, PhaseNode Node){ // initial with size and SimuNodes.at(i)s
             Dimension = SizeInfo;
-            fillNodes(Nodes);
+            fillNodes(Node);
             bindBoundary(BOUNDCOND::PERIODIC);
-            fillConMesh();
         }
-        PhaseSimulationMesh(PhaseNode Nodes){ // initial with SimuNodes.at(i)s and default size
-            fillNodes(Nodes);
+        PhaseSimulationMesh(PhaseNode Node){ // initial with SimuNodes.at(i)s and default size
+            fillNodes(Node);
             bindBoundary(BOUNDCOND::PERIODIC);
-            fillConMesh();
         }
         ~PhaseSimulationMesh(){};
 
@@ -82,14 +82,31 @@ class PhaseSimulationMesh{
 //              /**/
             }
         }
-        void fillConMesh(){
-            for(unsigned i = 0; i < SimuNodes.at(0).getNums(WHICHPARA::CON); i++){
-                MeshCon.push_back({});
-                for(unsigned j = 0; j < getNumNodes(); j++){
-                    MeshCon.at(i).push_back(SimuNodes.at(j).getProperties(WHICHPARA::CON).at(i));
+        // take properties of node to mesh, seperated by index
+        void updatePropMesh(unsigned which){
+            if(which == WHICHPARA::CON){
+                for(unsigned i = 0; i < SimuNodes.at(0).getNums(which); i++){
+                    MeshCon.push_back({});
+                    for(unsigned j = 0; j < getNumNodes(); j++){
+                        MeshCon.at(i).push_back(SimuNodes.at(j).getProperties(which).at(i));
+                    }
+                }
+            }
+            if(which == WHICHPARA::GRAIN){
+                for(unsigned i = 0; i < SimuNodes.at(0).getNums(which); i++){
+                    MeshOrdPara.push_back({});
+                    for(unsigned j = 0; j < getNumNodes(); j++){
+                        MeshOrdPara.at(i).push_back(SimuNodes.at(j).getProperties(which).at(i));
+                    }
+                }
+            }
+            if(which == WHICHPARA::CUSTOM){
+                for(unsigned i = 0; i < getNumNodes(); i++){
+                    MeshCstmVal.push_back(SimuNodes.at(i).getProperties(WHICHPARA::CUSTOM).at(0));
                 }
             }
         }
+
         void fillCstmMesh(){
             for(auto node : SimuNodes){
                 MeshCstmVal.push_back(node.getProperties(WHICHPARA::CUSTOM).at(0));
@@ -101,6 +118,7 @@ class PhaseSimulationMesh{
             for(unsigned i = 0; i < getNumNodes();i++){
                 meshcon.at(i) = (SimuNodes.at(i).getProperties(which).at(index));
             }
+            return meshcon;
         }
 
         double getDim(const double which){
@@ -109,7 +127,7 @@ class PhaseSimulationMesh{
         double getNumNodes(){ // return the number of SimuNodes.at(i)s in mesh
             return SimuNodes.size();
         }
-        double getStepLength(const double which){
+        double getStepLength(const int which){
             return StepLength.at(which);
         }
         
@@ -140,6 +158,29 @@ class PhaseSimulationMesh{
 
         void showMeshInfo(); // show the basic information of the mesh
         void showNodesProp(unsigned which, unsigned index); // show one of the properties of the SimuNodes.at(i)s inside the mesh
+
+/*************************************************************/
+
+        std::vector<double> Laplacian (int whichSTNCL, int whichPara){
+            std::vector<double> result(getNumNodes(),0.0);
+            double dx = getStepLength(WHICHDIM::X);
+            double dy = getStepLength(WHICHDIM::Y);
+            double dz = getStepLength(WHICHDIM::Z);
+            if(whichSTNCL = STENCILE::FIVEPOINT){
+            #pragma omp parallel for
+                for(int i = 0; i < getNumNodes(); i++){
+                    
+                    double c = findNode(i).getProperties(whichPara).at(0);
+                    double f = findNode(i).Forward->getProperties(whichPara).at(0);
+                    double b = findNode(i).Backward->getProperties(whichPara).at(0);
+                    double l = findNode(i).Left->getProperties(whichPara).at(0);
+                    double r = findNode(i).Right->getProperties(whichPara).at(0);
+    
+                    result.at(i) = ((f+b+l+r-4*c)/(dx*dy*dz));
+                }
+            }
+            return result;
+        }
 };
 
 void PhaseSimulationMesh::showMeshInfo(){
