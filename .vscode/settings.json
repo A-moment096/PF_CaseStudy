@@ -58,6 +58,7 @@
         "variant": "cpp",
         "phasesimulationbox": "cpp",
         "complex": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "map": "cpp"
     }
 }

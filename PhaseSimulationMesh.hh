@@ -4,14 +4,15 @@
 
 #include <iostream>
 #include <vector>
-#include "PhaseNode.hh"
+#include "MeshNode.hh"
 
 enum WHICHDIM{X,Y,Z};
 enum BOUNDCOND{PERIODIC,CONST,ADIABATIC};
 enum STENCILE{FIVEPOINT=5,NINEPOINT=9};
+enum WHICHPARA {CON,GRAIN,CUSTOM=99};
 
 
-class PhaseSimulationMesh{
+class SimulationMesh{
     private:
         std::vector<double> Dimension{64, 64, 1};
         double& BoxX = Dimension.at(0);
@@ -23,33 +24,34 @@ class PhaseSimulationMesh{
         // double& dy = StepLength.at(1);
         // double& dz = StepLength.at(2);
 
-        std::vector<PhaseNode> SimuNodes;
+        std::vector<MeshNode> SimuNodes;
     public:
 
         std::vector<std::vector<double>> MeshCon;
         std::vector<std::vector<double>> MeshOrdPara;
         std::vector<double> MeshCstmVal;
 
-        PhaseSimulationMesh(){} // initial with default size, without SimuNodes.at(i)s
+        SimulationMesh(){} // initial with default size, without SimuNodes.at(i)s
 
-        PhaseSimulationMesh(std::vector<double> SizeInfo, PhaseNode Node){ // initial with size and SimuNodes.at(i)s
+        SimulationMesh(std::vector<double> SizeInfo, MeshNode Node){ // initial with size and SimuNodes.at(i)s
             Dimension = SizeInfo;
             fillNodes(Node);
             bindBoundary(BOUNDCOND::PERIODIC);
         }
-        PhaseSimulationMesh(PhaseNode Node){ // initial with SimuNodes.at(i)s and default size
+        SimulationMesh(MeshNode Node){ // initial with SimuNodes.at(i)s and default size
             fillNodes(Node);
             bindBoundary(BOUNDCOND::PERIODIC);
         }
-        ~PhaseSimulationMesh(){};
+        ~SimulationMesh(){};
 
 /*************************************************************/
 
-        void fillNodes(PhaseNode Nodes){ // fill mesh with SimuNodes.at(i)s 
+        void fillNodes(MeshNode Nodes){ // fill mesh with SimuNodes.at(i)s 
             for(double i = 0; i < Dimension.at(0)*Dimension.at(1)*Dimension.at(2); i++){
                 SimuNodes.push_back(Nodes);
             }
         }
+
         void bindBoundary(double whichBOUNDCOND){
             for(double i = 0; i < getNumNodes(); i++ ){
                 SimuNodes.at(i).Forward = (i-BoxY < 0? &(SimuNodes.at(i)): &(SimuNodes.at(i-BoxY)) );
@@ -82,10 +84,12 @@ class PhaseSimulationMesh{
 //              /**/
             }
         }
+
+/*************************************************************/
         // take properties of node to mesh, seperated by index
         void updatePropMesh(unsigned which){
             if(which == WHICHPARA::CON){
-                for(unsigned i = 0; i < SimuNodes.at(0).getNums(which); i++){
+                for(unsigned i = 0; i < SimuNodes.at(0).Con_Node.getNums(); i++){
                     MeshCon.push_back({});
                     for(unsigned j = 0; j < getNumNodes(); j++){
                         MeshCon.at(i).push_back(SimuNodes.at(j).getProperties(which).at(i));
@@ -124,20 +128,23 @@ class PhaseSimulationMesh{
         double getDim(const double which){
             return Dimension.at(which);
         }
+
         double getNumNodes(){ // return the number of SimuNodes.at(i)s in mesh
             return SimuNodes.size();
         }
+
         double getStepLength(const int which){
             return StepLength.at(which);
         }
         
-        PhaseNode& findNode(double X, double Y, double Z){ // find SimuNodes.at(i) in the mesh according to the coordinates
+        MeshNode& findNode(double X, double Y, double Z){ // find SimuNodes.at(i) in the mesh according to the coordinates
             if(X<Dimension.at(0)&&Y<Dimension.at(1)&&Z<Dimension.at(2) && !(X<0) &&!(Y<0) &&!(Z<0)){
                 return SimuNodes.at(X+Y*Dimension.at(0)+Z*Dimension.at(0)*Dimension.at(1));
             }
             else throw std::invalid_argument("Index Not in Mesh");
         }
-        PhaseNode& findNode(double AbsCoord){
+
+        MeshNode& findNode(double AbsCoord){
             if(AbsCoord<getNumNodes()){
                 return SimuNodes.at(AbsCoord);
             }
@@ -183,13 +190,13 @@ class PhaseSimulationMesh{
         }
 };
 
-void PhaseSimulationMesh::showMeshInfo(){
-    std::cout<<"PhaseSimulationMesh Properties:"<<std::endl;
+void SimulationMesh::showMeshInfo(){
+    std::cout<<"SimulationMesh Properties:"<<std::endl;
     std::cout<<"Mesh Size:\t\t"<<BoxX<<"\u0078"<<BoxY<<"\u0078"<<BoxZ<<std::endl;
     std::cout<<"Number of Nodes:\t"<<getNumNodes()<<std::endl;
 }
 
-void PhaseSimulationMesh::showNodesProp(unsigned which, unsigned index){ //which para, index of para
+void SimulationMesh::showNodesProp(unsigned which, unsigned index){ //which para, index of para
     if(which == WHICHPARA::CON)std::cout<<"Concentration of "<<index<<" element\n";
     if(which == WHICHPARA::GRAIN)std::cout<<"Order Parameter of "<<index<<" grain\n";
     if(which == WHICHPARA::CUSTOM)std::cout<<"Custom value \n";

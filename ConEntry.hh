@@ -5,7 +5,8 @@
 #include <iostream>
 #include <vector>
 
-enum class ELEMENT{VA,
+enum class ELEMENT:int{
+VA=0,
 H,                                                                  He, 
 Li, Be,                                         B,  C,  N,  O,  F,  Ne,
 Na, Mg,                                         Al, Si, P,  S,  Cl, Ar, 
@@ -16,34 +17,76 @@ Fr, Ra, Ac, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn, Nh, Fl, Mc, Lv, Ts, Og,
         
         Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu,
         Th, Pa, U,  Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr,
+ELEMENTCount
 };
+
+std::ostream& operator<<(std::ostream& out, const ELEMENT _element){
+const char *element_list[] ={
+    "VA",
+    "H" ,                                                                                                 "He", 
+    "Li", "Be",                                                             "B,"  "C,"  "N",  "O",  "F",  "Ne",
+    "Na", "Mg",                                                             "Al", "Si", "P",  "S",  "Cl", "Ar", 
+    "K,"  "Ca", "Sc", "Ti", "V",  "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr",
+    "Rb", "Sr", "Y",  "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I",  "Xe",
+    "Cs", "Ba", "La", "Hf", "Ta", "W",  "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", 
+    "Fr", "Ra", "Ac", "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og",
+
+                "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu",
+                "Th", "Pa", "U",  "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr",
+
+    };
+    if(_element >=ELEMENT::ELEMENTCount || _element < ELEMENT::VA)return out<<"???";
+    return out<<element_list[(int)_element];
+}
 
 class ConEntry{
     private:
-    double Concentration = 0;
-    unsigned index;
+        double Concentration = 0;
+        ELEMENT Element;
     public:
     
-    ConEntry(){};
-    ~ConEntry(){};
-    ConEntry& operator= (const ConEntry& newEntry){
-            Concentration = newEntry.Concentration;
+        ConEntry(){
+            Element = ELEMENT::VA;
+        }
+        ConEntry(ELEMENT _element){
+            Element = _element;
+        }
+        ConEntry(ELEMENT _element, double _con):ConEntry(_element){
+            Concentration = _con;
+        }
+
+        ConEntry(const ConEntry& _Entry){
+            Concentration = _Entry.Concentration;
+        }
+
+        ConEntry& operator= (const ConEntry& _Entry){
+            Concentration = _Entry.Concentration;
             return *this;
         }
 
-    double getCon(){
-        return Concentration;
-    }
-    int getindex(){
-        return index;
-    }
-    void setCon(const double newOrderPara ){
-        Concentration = newOrderPara;
-    }
-    void setindex(const int _index){
-        index = _index;
-    }
+        ~ConEntry(){};
+        
+/*************************************************************/
 
-}DefaultConEnt;
+        bool operator== (const ConEntry& _Entry){
+            bool result;
+            ((Concentration == _Entry.Concentration)&&(Element == _Entry.Element)) ? (result = true) : (result = false);
+            return result;
+        }
+
+        double getCon(){
+            return Concentration;
+        }
+        ELEMENT getElement(){
+            return Element;
+        }
+        void setCon(const double _Con ){
+            Concentration = _Con;
+        }
+        void setElement(const ELEMENT _element){
+            Element = _element;
+        }
+
+}Def_ConEnt;
 
 #endif

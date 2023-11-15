@@ -7,32 +7,49 @@
 
 class PhaseEntry{
     private:
-    double OrderParameter = 0;
-    unsigned index;
+        double PhaseFrac = 0;
+        unsigned index;
     public:
-    
-    PhaseEntry(){};
-    ~PhaseEntry(){};
-    PhaseEntry& operator= (const PhaseEntry& newEntry){
-            OrderParameter = newEntry.OrderParameter;
-            index = newEntry.index;
+
+        PhaseEntry(){
+            index = 0;
+        }
+
+        PhaseEntry(const PhaseEntry& _Entry){
+            PhaseFrac = _Entry.PhaseFrac;
+            index = _Entry.index;
+        }
+
+        PhaseEntry& operator= (const PhaseEntry& _Entry){
+            PhaseFrac = _Entry.PhaseFrac;
+            index = _Entry.index;
             return *this;
         }
 
-    double getOrderPara(){
-        return OrderParameter;
-    }
-    int getindex(){
-        return index;
-    }
-    void setOrderPara(const double newOrderPara ){
-        OrderParameter = newOrderPara;
-    }
-    void setindex(const int _index){
-        index = _index;
-    }
+        ~PhaseEntry(){}
+
+/***    **********************************************************/
+        
+        bool operator== (const PhaseEntry& _Entry){
+            bool result;
+            ((PhaseFrac == _Entry.PhaseFrac)&&(index == _Entry.index)) ? (result = true) : (result = false);
+            return result;
+        }
+
+        double getPhsFrac(){
+            return PhaseFrac;
+        }
+        int getindex(){
+            return index;
+        }
+        void setPhsFrac(const double _PhsFrc ){
+            PhaseFrac = _PhsFrc;
+        }
+        void setindex(const int _index){
+            index = _index;
+        }
 
 
-}DefaultPhsEnt;
+}Def_PhsEnt;
 
 #endif
