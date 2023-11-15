@@ -76,26 +76,30 @@ class PhaseNode{
         }
 
         std::vector<double> getProperties(int which){
-            std::vector<double> temp;
+            
             if(which == WHICHPARA::CON){ // concentration
+            std::vector<double> temp(Num_Elemt,0.0);
                 for (int i = 0; i < Num_Elemt; i++)
                 {
-                    temp.push_back(ConVect.at(i).getCon());
+                    temp.at(i) = (ConVect.at(i).getCon());
                 }
                 return temp;
             }
+
             if(which == WHICHPARA::GRAIN){ // grain order parameter
+            std::vector<double> temp(Num_Grain,0.0);
                 for (int i = 0; i < Num_Grain; i++)
                 {
-                    temp.push_back(PhsVect.at(i).getOrderPara());
+                    temp.at(i) = (PhsVect.at(i).getOrderPara());
                 }
                 return temp;
             }
+
             if(which == WHICHPARA::CUSTOM){
-                temp.push_back(CustomValue);
+            std::vector<double> temp(1);
+                temp.at(0) = (CustomValue);
                 return temp;
             }
-            return temp;
         }
 
         void updateNode(unsigned which, unsigned index, double value){

@@ -50,13 +50,6 @@ int main()
         if(fmod(istep,nprint)==0)
         {   
             cout<<"Done Step: "<<istep<<endl;
-            // Box.showNodesProp(WHICHPARA::CON,0);
-            // cout<<"\n\n\n";
-            // for(int i = 0; i<Box.getDim(WHICHDIM::X); i++){
-            //     for(int j = 0; j<Box.getDim(WHICHDIM::Y); j++)
-            //         cout<<c.at(i).at(j)<<" ";
-            // }
-            // cout<<endl;
             write_vtk_grid_values(Box.getDim(WHICHDIM::X),Box.getDim(WHICHDIM::Y),Box.getStepLength(WHICHDIM::X),Box.getStepLength(WHICHDIM::Y),istep,c);
         }  
 
