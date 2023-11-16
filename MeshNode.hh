@@ -18,11 +18,10 @@ enum WHICHPARA {CON,PHSFRAC,CUSTOM=99};
 // enum WHICHDIR {UP,DOWN,FORWARD,BACKWARD,LEFT,RIGHT};
 
 class MeshNode{
-    private:
     public:
         double Custom_Value=0.0;
         double Temperature = 298.15;
-    public:
+
         PhaseNode Phs_Node;
         ConNode Con_Node;
 

@@ -7,7 +7,7 @@ void write_vtk_grid_values(int nx,int ny,double dx,double dy,int istep,std::vect
 	int npoin = nx*ny*nz;
 
 	char filename[128];
-	sprintf(filename,"L:\\Programme\\C++\\PhaseFieldModelling\\CaseStudy_3\\output\\Result\\time_%06d.vtk", istep);
+	sprintf(filename,"L:\\Programme\\C++\\PhaseFieldModelling\\CaseStudy_3\\output\\Result_1\\time_%06d.vtk", istep);
 
 	std::ofstream outfile;
 	outfile.open(filename);

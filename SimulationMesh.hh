@@ -26,10 +26,6 @@ class SimulationMesh{
         std::vector<MeshNode> SimuNodes;
     public:
 
-        std::vector<std::vector<double>> MeshCon;
-        std::vector<std::vector<double>> MeshOrdPara;
-        std::vector<double> MeshCstmVal;
-
         SimulationMesh(){} // initial with default size, without SimuNodes.at(i)s
 
         SimulationMesh(std::vector<double> SizeInfo, MeshNode Node){ // initial with size and SimuNodes.at(i)s
@@ -85,38 +81,6 @@ class SimulationMesh{
         }
 
 /*************************************************************/
-        // take properties of node to mesh, seperated by index
-
-
-        // void updateProp_Mesh(unsigned which){
-        //     if(which == WHICHPARA::CON){
-        //         for(unsigned i = 0; i < SimuNodes.at(0).getNum(which); i++){
-        //             MeshCon.push_back({});
-        //             for(unsigned j = 0; j < getNum_Nodes(); j++){
-        //                 MeshCon.at(i).push_back(SimuNodes.at(j).getProp(which).at(i));
-        //             }
-        //         }
-        //     }
-        //     if(which == WHICHPARA::PHSFRAC){
-        //         for(unsigned i = 0; i < SimuNodes.at(0).getNum(which); i++){
-        //             MeshOrdPara.push_back({});
-        //             for(unsigned j = 0; j < getNum_Nodes(); j++){
-        //                 MeshOrdPara.at(i).push_back(SimuNodes.at(j).getProp(which).at(i));
-        //             }
-        //         }
-        //     }
-        //     if(which == WHICHPARA::CUSTOM){
-        //         for(unsigned i = 0; i < getNum_Nodes(); i++){
-        //             MeshCstmVal.push_back(SimuNodes.at(i).getProp(WHICHPARA::CUSTOM).at(0));
-        //         }
-        //     }
-        // }
-
-        // void fillCstmMesh(){
-        //     for(auto node : SimuNodes){
-        //         MeshCstmVal.push_back(node.getProp(WHICHPARA::CUSTOM).at(0));
-        //     }
-        // }
 
         std::vector<double> getMeshProp(unsigned which, unsigned index){
             std::vector<double> result(getNum_Nodes(),0.0);
