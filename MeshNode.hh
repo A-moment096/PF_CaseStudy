@@ -14,20 +14,26 @@ only on one node (or say, point) in simulation
 region (or, box).
 ************************************************/
 
+enum WHICHPARA {CON,PHSFRAC,CUSTOM=99};
+// enum WHICHDIR {UP,DOWN,FORWARD,BACKWARD,LEFT,RIGHT};
 
 class MeshNode{
     private:
+    public:
         double Custom_Value=0.0;
         double Temperature = 298.15;
         PhaseNode Phs_Node;
         ConNode Con_Node;
-    public:
-        MeshNode* Up = this;
-        MeshNode* Down = this;
-        MeshNode* Forward = this;
-        MeshNode* Backward = this;
-        MeshNode* Left = this;
-        MeshNode* Right = this;
+
+        struct AdjLoc{
+            MeshNode* Up = NULL;
+            MeshNode* Down = NULL;
+            MeshNode* Forward = NULL;
+            MeshNode* Backward = NULL;
+            MeshNode* Left = NULL;
+            MeshNode* Right = NULL;
+        }whichdir;
+
      // Construct & Deconstruct Functions
         MeshNode(){
             Phs_Node = Def_PhsNode;
@@ -46,6 +52,40 @@ class MeshNode{
         ~MeshNode(){};
      // Manipulate Methods
 
+        unsigned getNum(unsigned whichpara){
+            switch (whichpara)
+            {
+            case WHICHPARA::CON :
+                return Con_Node.getNums();
+                break;
+            case WHICHPARA::PHSFRAC :
+                return Phs_Node.getNums();
+                break;
+            default:
+                throw std::invalid_argument("No such element");
+                return 0;
+                break;
+            }
+        }
+
+        std::vector<double> getProp(unsigned whichpara){
+            switch (whichpara)
+            {
+            case WHICHPARA::CON :
+                return Con_Node.getCon();
+                break;
+            case WHICHPARA::PHSFRAC :
+                return Phs_Node.getPhsFrac();
+                break;
+            case WHICHPARA::CUSTOM :
+                return {Custom_Value};
+                break;
+            default:
+                break;
+            }
+            return {};
+        }
+
         void showNode();
 }Def_Node;
 
@@ -53,11 +93,11 @@ class MeshNode{
 void MeshNode::showNode(){
     std::cout<<"Node Information:\n";
     std::cout<<"Temperature:\t\t"<<Temperature<<"\n";
-    std::cout<<"OrdParaIndex:\tOrderParameter:\t\tElement:\tConcentration:\n";
+    std::cout<<"Phase Index:\tPhase Fraction:\t\tElement:\tConcentration:\n";
     for(int i = 0; i < Phs_Node.getNums(); i++){
         for(int j = 0; j < Con_Node.getNums(); j++){
             std::cout<<Phs_Node.getindex().at(i)<<"\t\t"<<std::fixed<<std::setprecision(6)<<Phs_Node.getPhsFrac(i)<<"\t\t";
-            std::cout<<Con_Node.getElement().at(j)<<"\t\t"<<std::fixed<<std::setprecision(6)<<Con_Node.getCon().at(j)<<"\n";
+            std::cout<<Con_Node.getElementList().at(j)<<"\t\t"<<std::fixed<<std::setprecision(6)<<Con_Node.getCon().at(j)<<"\n";
         }
         std::cout<<"\n";
     }
