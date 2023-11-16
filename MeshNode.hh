@@ -19,9 +19,10 @@ class MeshNode{
     private:
         double Custom_Value=0.0;
         double Temperature = 298.15;
+    public:
         PhaseNode Phs_Node;
         ConNode Con_Node;
-    public:
+        
         MeshNode* Up = this;
         MeshNode* Down = this;
         MeshNode* Forward = this;
