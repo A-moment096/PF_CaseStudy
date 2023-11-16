@@ -5,20 +5,40 @@ using std::endl;
 using std::vector;
 
 int main(){
-    ConNode con_node(std::vector<ELEMENT>{ELEMENT::Fe});
-    MeshNode node(con_node);
-    SimulationMesh mesh({8,8,1},node);
-    for(unsigned i = 0; i < mesh.getNum_Nodes(); i++){
-        mesh.updateNodeCon(i,0.5);
-    }
-    for (unsigned i = 0; i < mesh.getDim(WHICHDIM::X); i++)
-    {
-        for (unsigned j = 0; j < mesh.getDim(WHICHDIM::Y); j++)
-        {
-            if(i<1||i>=mesh.getDim(WHICHDIM::X)-1||j<1||j>=mesh.getDim(WHICHDIM::Y)-1){
-                mesh.updateNodeCon({(double)i,(double)j,0},2.22222222222);
+    PhaseNode phs_node(std::vector<PhaseEntry> {Def_PhsEnt,Def_PhsEnt});
+    MeshNode node(phs_node);
+    SimulationMesh mesh(/*{16,16,1},*/node);
+    vector<double> ones(mesh.getNum_Nodes(),1.0);
+    vector<double> zeros(mesh.getNum_Nodes(),0.0);
+
+    double cent = mesh.getDim(WHICHDIM::X)/2;
+    double rad = 12;
+
+    mesh.updateMeshPhs(0,ones);
+    mesh.updateMeshPhs(1,zeros);
+
+    for(double i = 0; i < mesh.getDim(WHICHDIM::X); i++){
+        for(double j = 0; j < mesh.getDim(WHICHDIM::Y); j++){
+            if( ((i-cent)*(i-cent)+(j-cent)*(j-cent)) < rad*rad ) {
+                mesh.updateNodePhs({i,j,0},0,0);
+                mesh.updateNodePhs({i,j,0},1,1);
             }
         }
-    }   
-    mesh.showNodesProp(WHICHPARA::CON,0);
+    }
+
+    mesh.outFile(0,mesh.getMeshProp(WHICHPARA::PHSFRAC,0));
+    
+
+    // for (int i = 0; i < mesh.getDim(WHICHDIM::X); i++)
+    // {
+    //     for (int j = 0; j < mesh.getDim(WHICHDIM::Y); j++)
+    //     {
+    //         if(i<1||i>=mesh.getDim(WHICHDIM::X)-1||j<1||j>=mesh.getDim(WHICHDIM::Y)-1){
+    //             mesh.updateNodeCon({(double)i,(double)j,0},2.22222222222);
+    //         }
+    //     }
+    // }
+    // 
+    // mesh.showNodesProp(WHICHPARA::PHSFRAC, 0);
+    // mesh.showNodesProp(WHICHPARA::PHSFRAC, 1);
 }

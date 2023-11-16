@@ -23,6 +23,9 @@ class PhaseNode{
         PhaseNode(std::vector<PhaseEntry> EntryList){
             Entrys = EntryList;
             Num_PhsFrc = EntryList.size();
+            for(unsigned i = 0; i < Num_PhsFrc; i++){
+                Entrys.at(i).setindex(i);
+            }
         }
 
         PhaseNode(const PhaseNode &_node){
@@ -102,9 +105,9 @@ class PhaseNode{
             throw std::out_of_range("Not in entry list");
         }
         
-        void updateEntry(double _con){
+        void updateEntry(double _phs){
             if(Num_PhsFrc == 1){
-                Entrys.at(0).setPhsFrac(_con);
+                Entrys.at(0).setPhsFrac(_phs);
                 return;
             }
             else throw std::invalid_argument("Not only one element");

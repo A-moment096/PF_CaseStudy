@@ -110,6 +110,11 @@ class SimulationMesh{
             return StepLength.at(which);
         }
 
+        unsigned getNum_Prop(WHICHPARA which){
+            return SimuNodes.at(0).getNum(which);
+        }
+
+
         std::vector<double> transCoord(double where){
             if(where<getNum_Nodes()){       
                 std::vector<double>coord;
@@ -149,6 +154,8 @@ class SimulationMesh{
             }
         }
 
+/*************************************************************/
+
         void updateMeshCon(std::vector<double> _val){
             for(int i = 0; i < getNum_Nodes(); i++){
                 if(SimuNodes.at(i).getNum(WHICHPARA::CON) == 1)
@@ -181,8 +188,28 @@ class SimulationMesh{
             updateNodeCon(transCoord(where),_element,_con);
         }
 
+/*************************************************************/
+        void updateMeshPhs(unsigned index, std::vector<double> _val){
+            for(unsigned i = 0; i < getNum_Nodes(); i++){
+                SimuNodes.at(i).Phs_Node.updateEntry(index,_val.at(i));
+            }
+        }
+
+        void updateNodePhs(unsigned where,unsigned index, double _phs){
+            SimuNodes.at(where).Phs_Node.updateEntry(index,_phs);
+        }
+
+        void updateNodePhs(std::vector<double> where, unsigned index, double _phs){
+            updateNodePhs(transCoord(where),index,_phs);
+        }
+
+
+
+/*************************************************************/
         void showGlobalInfo(); // show the basic information of the mesh
         void showNodesProp(unsigned which, unsigned index); // show one of the properties of the SimuNodes.at(i)s inside the mesh
+        void write_vtk_grid_values(int istep,std::vector<double> data);
+        void outFile(int istep, std::vector<double> data);
 
 /*************************************************************/
 
@@ -231,5 +258,45 @@ void SimulationMesh::showNodesProp(unsigned which, unsigned index){ //which para
     }
     std::cout<<"-----------------------------------------------------------------\n"<<std::endl;
 }
+
+void SimulationMesh::write_vtk_grid_values(int istep,std::vector<double> data)
+{
+
+	char filename[128];
+	sprintf(filename,"L:\\Programme\\C++\\PhaseFieldModelling\\CaseStudy_3\\output\\Result_1\\time_%06d.vtk", istep);
+
+	std::ofstream outfile;
+	outfile.open(filename);
+	outfile<<"# vtk DataFile Version 2.0\n";
+	outfile<<"time_10.vtk\n";
+	outfile<<"ASCII\n";
+	outfile<<"DATASET STRUCTURED_GRID\n";
+
+	outfile<<"DIMENSIONS "<<BoxX<<"  "<<BoxY<<"  "<<BoxZ<<"\n";
+	outfile<<"POINTS "<<getNum_Nodes()<<"   float\n";
+	double dumx,dumy,dumz;
+	for(int i=0;i<BoxX;i++)
+		for(int j=0;j<BoxY;j++)
+		{
+			dumx = i*StepLength.at(0); dumy = j*StepLength.at(1); dumz = 0.0;
+
+			outfile<<dumx<<"   "<<dumy<<"   "<<dumz<<"\n";
+		}
+
+	outfile<<"POINT_DATA "<<getNum_Nodes()<<"\n";
+	outfile<<"SCALARS CON  float  1\n";
+	outfile<<"LOOKUP_TABLE default\n";
+
+	for(int i=0;i<BoxX*BoxY;i++)
+		outfile<<data.at(i)<<"\n";
+
+	outfile.close();
+	
+}
+
+void SimulationMesh::outFile(int istep, std::vector<double> data){
+    write_vtk_grid_values(istep,data);
+}
+
 
 #endif

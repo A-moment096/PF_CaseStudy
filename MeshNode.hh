@@ -52,7 +52,7 @@ class MeshNode{
         ~MeshNode(){};
      // Manipulate Methods
 
-        unsigned getNum(unsigned whichpara){
+        unsigned getNum(WHICHPARA whichpara){
             switch (whichpara)
             {
             case WHICHPARA::CON :
@@ -106,3 +106,4 @@ void MeshNode::showNode(){
 
 
 #endif
+
