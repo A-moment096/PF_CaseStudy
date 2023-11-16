@@ -5,7 +5,7 @@
 #include <vector>
 #include <random>
 
-// #include "PhaseSimulationMesh.hh"
+#include "SimulationMesh.hh"
 // #include "PhaseSolver.hh"
 #include "MeshNode.hh"
 #include "write_vtk_grid_values.cpp"

@@ -50,7 +50,11 @@ class ConNode{
             return Num_Elemt;
         }
 
-        std::vector<ELEMENT> getElement(){
+        ELEMENT getElement(unsigned index){
+            return Entrys.at(index).getElement();
+        }
+
+        std::vector<ELEMENT> getElementList(){
             std::vector<ELEMENT> result;
             for(auto ent : Entrys){
                 result.push_back(ent.getElement());
@@ -66,9 +70,9 @@ class ConNode{
             return result;
         }
 
-        double getCon(ELEMENT _Elemnt){
+        double getCon(ELEMENT _elemnt){
             for(auto ent : Entrys){
-                if(ent.getElement()==_Elemnt){
+                if(ent.getElement()==_elemnt){
                     return ent.getCon();
                 }
             }
@@ -76,28 +80,28 @@ class ConNode{
             return 0.0;
         }
 
-        ConEntry getEntry(ELEMENT _Elemnt){
+        ConEntry getEntry(ELEMENT _elemnt){
             for(auto ent : Entrys){
-                if(ent.getElement()==_Elemnt){
+                if(ent.getElement()==_elemnt){
                     return ent;
                 }
             }
             throw std::invalid_argument("No such element");
         }
 
-        void addEntry(ConEntry _Entry){
-            Entrys.push_back(_Entry);
+        void addEntry(ConEntry _entry){
+            Entrys.push_back(_entry);
         }
 
-        void addEntry(ELEMENT _Element){
+        void addEntry(ELEMENT _element){
             ConEntry tempEntry;
-            tempEntry.setElement(_Element);
+            tempEntry.setElement(_element);
             Entrys.push_back(tempEntry);
         }
 
-        void addEntry(ELEMENT _Element, double _con){
+        void addEntry(ELEMENT _element, double _con){
             ConEntry tempEntry;
-            tempEntry.setElement(_Element);
+            tempEntry.setElement(_element);
             tempEntry.setCon(_con);
             Entrys.push_back(tempEntry);
         }
@@ -115,9 +119,9 @@ class ConNode{
             throw std::invalid_argument("No such element");
         }
 
-        void updateEntry(ELEMENT _Elemnt,double _con){
+        void updateEntry(ELEMENT _elemnt,double _con){
             for(auto &ent : Entrys){
-                if(ent.getElement() == _Elemnt){
+                if(ent.getElement() == _elemnt){
                     ent.setCon(_con);
                     return;
                 }
