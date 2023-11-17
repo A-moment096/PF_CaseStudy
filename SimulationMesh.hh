@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <fstream>
 #include "MeshNode.hh"
 
 enum WHICHDIM{X,Y,Z};
@@ -134,7 +135,8 @@ class SimulationMesh{
             return 0;
         }
         
-        MeshNode& findNode(double X, double Y, double Z){ // find SimuNodes.at(i) in the mesh according to the coordinates
+        // find SimuNodes.at(i) in the mesh according to the coordinates
+        MeshNode& findNode(double X, double Y, double Z){ 
             if(X<Dimension.at(0)&&Y<Dimension.at(1)&&Z<Dimension.at(2) && !(X<0) &&!(Y<0) &&!(Z<0)){
                 return SimuNodes.at(X+Y*Dimension.at(0)+Z*Dimension.at(0)*Dimension.at(1));
             }
