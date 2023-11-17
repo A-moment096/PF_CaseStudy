@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <fstream>
 #include "MeshNode.hh"
 
 enum WHICHDIM{X,Y,Z};
@@ -112,6 +113,19 @@ class SimulationMesh{
 
         unsigned getNum_Prop(WHICHPARA which){
             return SimuNodes.at(0).getNum(which);
+        }
+
+        std::vector<double> getUni_Prop(WHICHPARA whichpara){
+            std::vector<double> result;
+            for(auto node : SimuNodes){
+                double sum = 0;
+                for(auto val : node.getProp(whichpara)){
+                    sum += val*val;
+                }
+                sum = sqrt(sum) / node.getNum(whichpara);
+                result.push_back(sum);
+            }
+            return result;
         }
 
 
@@ -263,7 +277,7 @@ void SimulationMesh::write_vtk_grid_values(int istep,std::vector<double> data)
 {
 
 	char filename[128];
-	sprintf(filename,"L:\\Programme\\C++\\PhaseFieldModelling\\CaseStudy_3\\output\\Result_1\\time_%06d.vtk", istep);
+	sprintf(filename,"D:\\Developing\\C++\\PhaseFieldModelling\\CaseStudy_3\\output\\Result\\time_%04d.vtk", istep);
 
 	std::ofstream outfile;
 	outfile.open(filename);
@@ -284,7 +298,7 @@ void SimulationMesh::write_vtk_grid_values(int istep,std::vector<double> data)
 		}
 
 	outfile<<"POINT_DATA "<<getNum_Nodes()<<"\n";
-	outfile<<"SCALARS CON  float  1\n";
+	outfile<<"SCALARS PHSFRAC  float  1\n";
 	outfile<<"LOOKUP_TABLE default\n";
 
 	for(int i=0;i<BoxX*BoxY;i++)
