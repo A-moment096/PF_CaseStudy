@@ -3,6 +3,7 @@
 #define CON_ENTRY
 
 #include <iostream>
+#include <string>
 #include <vector>
 
 enum class ELEMENT:int{
@@ -21,7 +22,7 @@ ELEMENTCount
 };
 
 std::ostream& operator<<(std::ostream& out, const ELEMENT _element){
-const char *element_list[] ={
+const std::vector<std::string> element_list = {
     "VA",
     "H" ,                                                                                                 "He", 
     "Li", "Be",                                                             "B",  "C",  "N",  "O",  "F",  "Ne",
@@ -66,7 +67,9 @@ class ConEntry{
             return *this;
         }
 
-        ~ConEntry(){};
+        ~ConEntry(){
+            std::cout<<"conent deleted\n";
+        }
         
 /*************************************************************/
 

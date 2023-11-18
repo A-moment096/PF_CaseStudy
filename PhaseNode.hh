@@ -39,7 +39,10 @@ class PhaseNode{
             return *this;
         }
 
-        ~PhaseNode(){}
+        ~PhaseNode(){
+            Entrys.clear();
+            std::cout<<"phsnode deleted\n";
+        }
 
         unsigned getNums(){
             return Num_PhsFrc;

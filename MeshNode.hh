@@ -25,14 +25,14 @@ class MeshNode{
         PhaseNode Phs_Node;
         ConNode Con_Node;
 
-        struct AdjLoc{
+        
             MeshNode* Up = NULL;
             MeshNode* Down = NULL;
             MeshNode* Forward = NULL;
             MeshNode* Backward = NULL;
             MeshNode* Left = NULL;
             MeshNode* Right = NULL;
-        }whichdir;
+        
 
      // Construct & Deconstruct Functions
         MeshNode(){
@@ -49,7 +49,16 @@ class MeshNode{
         
         MeshNode(ConNode _con_node):MeshNode(Def_PhsNode,_con_node){}
         
-        ~MeshNode(){};
+        ~MeshNode(){
+            // delete Up;
+            // delete Down;
+            // delete Forward;
+            // delete Backward;
+            // delete Left;
+            // delete Right;
+            std::cout<<"meshnode deleted\n";
+
+        };
      // Manipulate Methods
 
         unsigned getNum(WHICHPARA whichpara){
