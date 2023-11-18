@@ -27,7 +27,6 @@ class PhaseEntry{
         }
 
         ~PhaseEntry(){
-            std::cout<<"phsent deleted\n";
         }
 
 /***    **********************************************************/

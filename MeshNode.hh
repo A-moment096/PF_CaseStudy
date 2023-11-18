@@ -50,14 +50,12 @@ class MeshNode{
         MeshNode(ConNode _con_node):MeshNode(Def_PhsNode,_con_node){}
         
         ~MeshNode(){
-            // delete Up;
-            // delete Down;
-            // delete Forward;
-            // delete Backward;
-            // delete Left;
-            // delete Right;
-            std::cout<<"meshnode deleted\n";
-
+        Up = NULL;
+        Down = NULL;
+        Forward = NULL;
+        Backward = NULL;
+        Left = NULL;
+        Right = NULL;
         };
      // Manipulate Methods
 

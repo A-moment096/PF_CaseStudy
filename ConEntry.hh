@@ -68,7 +68,6 @@ class ConEntry{
         }
 
         ~ConEntry(){
-            std::cout<<"conent deleted\n";
         }
         
 /*************************************************************/

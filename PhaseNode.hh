@@ -41,7 +41,6 @@ class PhaseNode{
 
         ~PhaseNode(){
             Entrys.clear();
-            std::cout<<"phsnode deleted\n";
         }
 
         unsigned getNums(){

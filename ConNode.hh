@@ -46,7 +46,6 @@ class ConNode{
 
         ~ConNode(){
             Entrys.clear();
-            std::cout<<"connode deleted\n";
         }
 
         unsigned getNums(){

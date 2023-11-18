@@ -30,18 +30,20 @@ class SimulationMesh{
 
         SimulationMesh(){} // initial with default size, without SimuNodes.at(i)s
 
-        SimulationMesh(std::vector<double> SizeInfo, MeshNode Node):SimulationMesh(Node){ // initial with size and SimuNodes.at(i)s
+        SimulationMesh(std::vector<double> SizeInfo, MeshNode Node){ // initial with size and SimuNodes.at(i)s
             Dimension = SizeInfo;
+            fillNodes(Node);
+            Num_Nodes = SimuNodes.size();
+            bindBoundary(BOUNDCOND::PERIODIC);
+        }
+        SimulationMesh(MeshNode Node):SimulationMesh({64,64,1},Node){ // initial with SimuNodes.at(i)s and default size
             // fillNodes(Node);
             // Num_Nodes = SimuNodes.size();
             // bindBoundary(BOUNDCOND::PERIODIC);
         }
-        SimulationMesh(MeshNode Node){ // initial with SimuNodes.at(i)s and default size
-            fillNodes(Node);
-            Num_Nodes = SimuNodes.size();
-            // bindBoundary(BOUNDCOND::PERIODIC);
-        }
         ~SimulationMesh(){
+            Dimension.clear();
+            StepLength.clear();
             SimuNodes.clear();
         };
 
