@@ -41,14 +41,15 @@ const std::vector<std::string> element_list = {
 }
 
 class ConEntry{
-    private:
+    public:
         double Concentration = 0;
         ELEMENT Element;
         int index = 0;
         double Lap = 0;
         double Grad = 0;
-    public:
     
+/*************************************************************/
+     
         ConEntry(){
             Element = ELEMENT::VA;
             index = 0;
@@ -81,8 +82,6 @@ class ConEntry{
 
         ~ConEntry(){
         }
-        
-/*************************************************************/
 
 /**/    bool operator== (const ConEntry& _Entry){
             bool result;
@@ -90,38 +89,7 @@ class ConEntry{
             return result;
         }
 
-        double getCon(){
-            return Concentration;
-        }
-        ELEMENT getElement(){
-            return Element;
-        }
-        int getindex(){
-            return index;
-        }
-        double getLap(){
-            return Lap;
-        }
-        double getGrad(){
-            return Grad;
-        }
-
-
-        void setCon(const double _Con ){
-            Concentration = _Con;
-        }
-        void setElement(const ELEMENT _element){
-            Element = _element;
-        }
-        void setindex(const int _index){
-            index = _index;
-        }
-        void setLap(const double _Lap){
-            Lap = _Lap;
-        }
-        void setGrad(const double _Grad){
-            Grad = _Grad;
-        }
+/*************************************************************/
 
 }Def_ConEnt;
 

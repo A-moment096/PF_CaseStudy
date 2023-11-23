@@ -4,25 +4,30 @@ using std::cout;
 using std::endl;
 using std::vector;
 
+double phi(double c){
+    return c*c*c*(10-15*c+6*c*c);
+}
+
 int main(){
     auto start =  std::chrono::high_resolution_clock:: now();
 
     MeshNode node(PhaseNode (std::vector<PhaseEntry> (2,Def_PhsEnt)),Def_ConNode);
-    SimulationMesh mesh({100,100,1},{0.5,0.5,0},node);
+    SimulationMesh mesh({100,100,1},{0.5,0.5,1},node);
 
     double Dvol = 0.040, Dvap = 0.002, Dsurf = 16.0, Dgb = 1.6, kappa_rho = 5.0, kappa_eta = 2.0, L = 10.0;
-    int nstep = 5000, nprint = 50; double dtime = 0.0001;
+    int nstep = 5000, nprint = 50; double dtime = 1e-4;
+    double coefm = 5.0, coefk = 2.0, coefl = 5.0;
 
 // Initializer
-int simuflag = 2;
+int simuflag = 0;
     if(simuflag == 0){    
-    double cent = mesh.getDim(WHICHDIM::X)/2;
+    double cent = mesh.MeshX/2;
     double rad1 = 20, rad2 = 10;
-    int Px = mesh.getDim(0)/2, Py1 = 40, Py2 = 70;
+    int Px = mesh.MeshX/2, Py1 = 40, Py2 = 70;
 
         #pragma omp parallel for collapse(2)
-            for(int i = 0; i < mesh.getDim(WHICHDIM::X); ++i){
-                for(int j = 0; j < mesh.getDim(WHICHDIM::Y); j++){
+            for(int i = 0; i < mesh.MeshX; ++i){
+                for(int j = 0; j < mesh.MeshY; j++){
                     double &&dis1 = ((i-Px)*(i-Px)+(j-Py1)*(j-Py1));
                     double &&dis2 = ((i-Px)*(i-Px)+(j-Py2)*(j-Py2));
                     if( dis1<=rad1*rad1 ) {
@@ -39,13 +44,13 @@ int simuflag = 2;
     }
 
     if(simuflag == 1){
-    double cent = mesh.getDim(WHICHDIM::X)/2;
+    double cent = mesh.MeshX/2;
     double rad1 = 10;
-    int Px = mesh.getDim(0)/2, Py = Px;
+    int Px = mesh.MeshX/2, Py = mesh.MeshY/2;
 
         #pragma omp parallel for collapse(2)
-            for(int i = 0; i < mesh.getDim(WHICHDIM::X); ++i){
-                for(int j = 0; j < mesh.getDim(WHICHDIM::Y); j++){
+            for(int i = 0; i < mesh.MeshX; ++i){
+                for(int j = 0; j < mesh.MeshY; j++){
                     double &&dis = ((i-Px)*(i-Px)+(j-Py)*(j-Py));
                     if( dis >= rad1*rad1 && i >= Px) {
                         mesh.updateNodeCon({i,j,0},0.9999);
@@ -85,8 +90,8 @@ int simuflag = 2;
         double rad2 = 5.0;
         #pragma omp parallel for collapse(2)
             for(int coord = 0; coord < mesh.getNum_Prop(WHICHPARA::PHSFRAC); ++coord)
-                for(int i = 0; i < mesh.getDim(WHICHDIM::X); ++i)
-                    for(int j = 0; j < mesh.getDim(WHICHDIM::Y); ++j){
+                for(int i = 0; i < mesh.MeshX; ++i)
+                    for(int j = 0; j < mesh.MeshY; ++j){
                         double dis = (i-particleCoord.at(2*coord))*(i-particleCoord.at(2*coord))+(j-particleCoord.at(2*coord+1))*(j-particleCoord.at(2*coord+1));
                         if(coord<5){
                             if(dis<=rad1*rad1){
@@ -103,13 +108,55 @@ int simuflag = 2;
                     }
     }
 
+    if(simuflag == 999){
+        for(int i = 0; i<mesh.Num_Nodes; i++){
+        mesh.findNode(i).Con_Node.updateEntry(0,0.4+0.01-double(rand()%200)/10000);
+    }
+
+    }
+mesh.outFile(0);    
+
+for (int istep = 0; istep < nstep; ++istep)
+{
+    mesh.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CON);
+
+    {double A = 16.0, B = 1.0;
+    for(auto &node : mesh.SimuNodes){
+        double dfdcon, c = node.Con_Node.getCon().at(0); // // // // // node.getCon().at(0)
+        dfdcon = B*(2*c+4*node.sumPhsFrac3() - 6*node.sumPhsFrac2())- 2*A*(3*c*c*-2*c*c*c-c);
+        node.Custom_Value = (dfdcon - 0.5*coefm* (node.getLap(WHICHPARA::CON).at(0)) );
+    }}
+    mesh.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CUSTOM);
+
+    double Diffu = 0;
+    int identfier = 0;
+
+    for(auto &node : mesh.SimuNodes){
+        identfier++;
+        double sum = node.sumPhsFrac()*node.sumPhsFrac() - node.sumPhsFrac2();
+        double c = node.Con_Node.getCon().at(0);
+        Diffu = Dvol*(phi(c))+Dvap*(1-phi(c))+Dsurf*c*(1-c)+Dgb*sum;
+
+        double dumy = c + dtime*Diffu*node.CustLap;
+        
+        mesh.threshold(dumy,0.0001,0.9999);
+
+        node.Con_Node.updateEntry(0,dumy);
+    }
     
-    mesh.outFile(0);    
+    if(fmod(istep,nprint)==0)
+        {   
+            mesh.outFile(istep);    
+            cout<<"Done Step: "<<istep<<endl;
+        }  
+}
+
+
 
     auto stop =  std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds> (stop-start);
-    cout<<"Time taken by programme: "<<(double) duration.count() / 1e6 << " seconds"<<endl;
+    cout<<"\nTime taken by programme: "<<(double) duration.count() / 1e6 << " seconds"<<endl;
 
-    // system("pause");
     return 0;
 }
+

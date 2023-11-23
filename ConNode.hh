@@ -10,43 +10,41 @@
 #include "ConEntry.hh"
 
 class ConNode{
-    private:
-        unsigned Num_Elemt;
-        std::vector<ConEntry> Entrys;
     public:
+        unsigned Num_Ent;
+        std::vector<ConEntry> Entrys;
+
+/*************************************************************/
+
 // Construct & Deconstruct Functions
         ConNode(){
             Entrys.push_back(Def_ConEnt);
-            Num_Elemt = 1;
-            Entrys.at(0).setindex(0);
+            Num_Ent = 1;
+            Entrys.at(0).index  = 0;
         } //Accept Default Parameters
         
         ConNode(std::vector<ConEntry> EntryList){
             Entrys = EntryList;
-            Num_Elemt = EntryList.size();
-            int dumy = 0;
-            for(auto &ent : Entrys){
-                ent.setindex(dumy);
-                ++dumy;
-            }
+            Num_Ent = EntryList.size();
+            update_index();
         }
 
         ConNode(std::vector<ELEMENT> ElementList){
-            Num_Elemt = ElementList.size();
-            for (unsigned i = 0; i < Num_Elemt; i++){
+            Num_Ent = ElementList.size();
+            for (unsigned i = 0; i < Num_Ent; i++){
                 Entrys.push_back(Def_ConEnt);
-                Entrys.at(i).setElement(ElementList.at(i));
-                Entrys.at(i).setindex(i);
+                Entrys.at(i).Element = (ElementList.at(i));
+                Entrys.at(i).index  = i;
             }
         }
 
         ConNode(const ConNode& _node){
-            Num_Elemt = _node.Num_Elemt;
+            Num_Ent = _node.Num_Ent;
             Entrys = _node.Entrys;
         }
 
         ConNode& operator= (const ConNode& _node){
-            Num_Elemt = _node.Num_Elemt;
+            Num_Ent = _node.Num_Ent;
             Entrys = _node.Entrys;
             return *this;
         }
@@ -55,81 +53,48 @@ class ConNode{
             Entrys.clear();
         }
 
-/*************************************************************/
+        /*************************************************************/
+
+        std::vector<double> getCon(){
+            std::vector<double> result;
+            for(auto ent : Entrys){
+                result.push_back(ent.Concentration);
+            }
+            return result;
+        }
+
+        std::vector<double> getLap(){
+            std::vector<double> result;
+            for(auto ent : Entrys){
+                result.push_back(ent.Lap);
+            }
+            return result;
+        }
+
+        std::vector<double> getGrad(){
+            std::vector<double> result;
+            for(auto ent : Entrys){
+                result.push_back(ent.Grad);
+            }
+            return result;
+        }
+
+        /*************************************************************/
 
         void addEntry(int num){
             for (int i = 0; i < num; ++i)
             {
                 Entrys.push_back(Def_ConEnt);
             }
-            
-        }
-
-        unsigned getNums(){
-            return Num_Elemt;
-        }
-
-        ELEMENT getElement(unsigned index){
-            return Entrys.at(index).getElement();
-        }
-
-        std::vector<ELEMENT> getElementList(){
-            std::vector<ELEMENT> result;
-            for(auto ent : Entrys){
-                result.push_back(ent.getElement());
-            }
-            return result;
-        }
-
-        std::vector<double> getCon(){
-            std::vector<double> result;
-            for(auto ent : Entrys){
-                result.push_back(ent.getCon());
-            }
-            return result;
-        }
-
-        double getCon(ELEMENT _elemnt){
-            for(auto ent : Entrys){
-                if(ent.getElement()==_elemnt){
-                    return ent.getCon();
-                }
-            }
-            throw std::invalid_argument("No such element");
-            return 0.0;
-        }
-
-        ConEntry getEntry(ELEMENT _elemnt){
-            for(auto ent : Entrys){
-                if(ent.getElement()==_elemnt){
-                    return ent;
-                }
-            }
-            throw std::invalid_argument("No such element");
-        }
-
-        void addEntry(ConEntry _entry){
-            Entrys.push_back(_entry);
-        }
-
-        void addEntry(ELEMENT _element){
-            ConEntry tempEntry;
-            tempEntry.setElement(_element);
-            Entrys.push_back(tempEntry);
-        }
-
-        void addEntry(ELEMENT _element, double _con){
-            ConEntry tempEntry;
-            tempEntry.setElement(_element);
-            tempEntry.setCon(_con);
-            Entrys.push_back(tempEntry);
+            Num_Ent = Entrys.size();
+            update_index();
         }
 
         void deletEntry(ELEMENT delElemnt){
-            if(Num_Elemt <= 1) throw std::out_of_range("Last entry");
+            if(Num_Ent <= 1) throw std::out_of_range("Last entry");
             else
                 for(auto &ent : Entrys){
-                    if(ent.getElement() == delElemnt){
+                    if(ent.Element == delElemnt){
                         std::vector<ConEntry>::iterator delPos = std::find(Entrys.begin(),Entrys.end(),ent);
                         Entrys.erase(delPos);
                         return;
@@ -140,41 +105,50 @@ class ConNode{
 
         void updateEntry(ELEMENT _elemnt,double _con){
             for(auto &ent : Entrys){
-                if(ent.getElement() == _elemnt){
-                    ent.setCon(_con);
+                if(ent.Element == _elemnt){
+                    ent.Concentration = _con;
                     return;
                 }
             }
             throw std::invalid_argument("No such element");
         }
 
-        void updateLap(unsigned index, double _Lap){
+        void updateEntry(int _index,double _con){
             for(auto &ent : Entrys){
-                if(ent.getindex() == index){
-                    ent.setLap(_Lap);
+                if(ent.index == _index){
+                    ent.Concentration = _con;
+                    return;
+                }
+            }
+            throw std::invalid_argument("No such element");
+        }
+
+        void updateLap(unsigned _index, double _Lap){
+            for(auto &ent : Entrys){
+                if(ent.index == _index){
+                    ent.Lap = _Lap;
                     return;
                 }
             }
             throw std::out_of_range("Not in entry list");
         }
 
-        void updateGrad(unsigned index, double _Grad){
+        void updateGrad(unsigned _index, double _Grad){
             for(auto &ent : Entrys){
-                if(ent.getindex() == index){
-                    ent.setGrad(_Grad);
+                if(ent.index == _index){
+                    ent.Grad = _Grad;
                     return;
                 }
             }
             throw std::out_of_range("Not in entry list");
         }
-        
+    
+        /*************************************************************/
 
-        void updateEntry(double _con){
-            if(Num_Elemt == 1){
-                Entrys.at(0).setCon(_con);
-                return;
+        void update_index(){
+            for(unsigned i = 0; i < Num_Ent; i++){
+                Entrys.at(i).index = (i);
             }
-            else throw std::invalid_argument("Not only one element");
         }
 }Def_ConNode;
 

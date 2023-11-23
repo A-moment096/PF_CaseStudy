@@ -19,30 +19,34 @@ enum WHICHPARA {CON,PHSFRAC,CUSTOM=99};
 
 class MeshNode{
     public:
-        double Custom_Value=0.0;
+        
+        double Custom_Value = 0.0;
+        double CustLap = 0.0;
         double Temperature = 298.15;
 
         PhaseNode Phs_Node;
         ConNode Con_Node;
 
-        
-            MeshNode* Up = nullptr;
-            MeshNode* Down = nullptr;
-            MeshNode* Forward = nullptr;
-            MeshNode* Backward = nullptr;
-            MeshNode* Left = nullptr;
-            MeshNode* Right = nullptr;
-        
+        MeshNode* Up = nullptr;
+        MeshNode* Down = nullptr;
+        MeshNode* Forward = nullptr;
+        MeshNode* Backward = nullptr;
+        MeshNode* Left = nullptr;
+        MeshNode* Right = nullptr;
+
+/*************************************************************/
 
      // Construct & Deconstruct Functions
         MeshNode(){
             Phs_Node = Def_PhsNode;
             Con_Node = Def_ConNode;
+            // Custom_Value.reserve(10);
         }; //Accept Default Parameters
     
         MeshNode(PhaseNode _phs_node, ConNode _con_node){
             Phs_Node = _phs_node;
             Con_Node = _con_node;
+            // Custom_Value.reserve(10);
         }
 
         MeshNode(PhaseNode _phs_node):MeshNode(_phs_node, Def_ConNode){}
@@ -56,17 +60,23 @@ class MeshNode{
         Backward = nullptr;
         Left = nullptr;
         Right = nullptr;
+        // Custom_Value.clear();
         };
-     // Manipulate Methods
 
-        unsigned getNum(WHICHPARA whichpara){
+        /*************************************************************/
+        // Manipulate Methods
+
+        unsigned getNum_Ent(WHICHPARA whichpara){
             switch (whichpara)
             {
             case WHICHPARA::CON :
-                return Con_Node.getNums();
+                return Con_Node.Num_Ent;
                 break;
             case WHICHPARA::PHSFRAC :
-                return Phs_Node.getNums();
+                return Phs_Node.Num_Ent;
+                break;
+            case WHICHPARA::CUSTOM :
+                return 1;
                 break;
             default:
                 throw std::invalid_argument("No such element");
@@ -75,7 +85,7 @@ class MeshNode{
             }
         }
 
-        std::vector<double> getProp(unsigned whichpara){
+        std::vector<double> getProp(WHICHPARA whichpara){
             switch (whichpara)
             {
             case WHICHPARA::CON :
@@ -93,6 +103,53 @@ class MeshNode{
             return {};
         }
 
+        std::vector<double> getLap(unsigned whichpara){
+            switch (whichpara)
+            {
+            case WHICHPARA::CON :
+                return Con_Node.getLap();
+                break;
+            case WHICHPARA::PHSFRAC :
+                return Phs_Node.getLap();
+                break;
+            default:
+                break;
+            }
+            return {};
+        }
+
+         std::vector<double> getGrad(unsigned whichpara){
+            switch (whichpara)
+            {
+            case WHICHPARA::CON :
+                return Con_Node.getGrad();
+                break;
+            case WHICHPARA::PHSFRAC :
+                return Phs_Node.getGrad();
+                break;
+            default:
+                break;
+            }
+            return {};
+        }
+        
+        /*************************************************************/
+
+        double sumPhsFrac(){
+            return Phs_Node.sumPhsFrac();
+        }
+
+        double sumPhsFrac2(){
+            return Phs_Node.sumPhsFrac2();
+        }
+        
+        double sumPhsFrac3(){
+            return Phs_Node.sumPhsFrac3();
+        }
+        
+
+        /*************************************************************/
+
         void showNode();
 }Def_Node;
 
@@ -101,10 +158,10 @@ void MeshNode::showNode(){
     std::cout<<"Node Information:\n";
     std::cout<<"Temperature:\t\t"<<Temperature<<"\n";
     std::cout<<"Phase Index:\tPhase Fraction:\t\tElement:\tConcentration:\n";
-    for(int i = 0; i < Phs_Node.getNums(); i++){
-        for(int j = 0; j < Con_Node.getNums(); j++){
-            std::cout<<Phs_Node.getindex().at(i)<<"\t\t"<<std::fixed<<std::setprecision(6)<<Phs_Node.getPhsFrac(i)<<"\t\t";
-            std::cout<<Con_Node.getElementList().at(j)<<"\t\t"<<std::fixed<<std::setprecision(6)<<Con_Node.getCon().at(j)<<"\n";
+    for(int i = 0; i < Phs_Node.Num_Ent; i++){
+        for(int j = 0; j < Con_Node.Num_Ent; j++){
+            std::cout<<Phs_Node.Entrys.at(i).index<<"\t\t"<<std::fixed<<std::setprecision(6)<<Phs_Node.getPhsFrac().at(i)<<"\t\t";
+            std::cout<<Con_Node.Entrys.at(j).Element<<"\t\t"<<std::fixed<<std::setprecision(6)<<Con_Node.getCon().at(j)<<"\n";
         }
         std::cout<<"\n";
     }

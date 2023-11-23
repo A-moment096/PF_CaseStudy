@@ -1,13 +1,13 @@
 #include <fstream>
 #include <vector>
 
-void write_vtk_grid_values0(int nx,int ny,double dx,double dy,int istep,std::vector<double> data)
+void write_vtk_grid_values(int nx,int ny,double dx,double dy,int istep,std::vector<double> data)
 {
 	int nz = 1;
 	int npoin = nx*ny*nz;
 
 	char filename[128];
-	sprintf(filename,"../output/Result_1/time_%04d.vtk", istep);
+	sprintf(filename,"../output/Result/time_%04d.vtk", istep);
 
 	std::ofstream outfile;
 	outfile.open(filename);

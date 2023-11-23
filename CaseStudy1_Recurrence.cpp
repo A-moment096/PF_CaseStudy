@@ -13,41 +13,34 @@ int main()
     MeshNode ConNode; // Node Properties
     SimulationMesh Box(ConNode);
 
-    for(int i = 0; i<Box.getNum_Nodes(); i++){
-        Box.findNode(i).Con_Node.updateEntry(0.4+0.01-double(rand()%200)/10000);
+    for(auto& node : Box.SimuNodes){
+        node.Con_Node.updateEntry(0,0.4+0.01-double(rand()%200)/10000);
     }
     int nprint = 100;
-    
-    for(int istep = 0; istep<20000;istep++){
-        Box.updateCustomValue(Box.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CON));
-
-        for(int i = 0; i<Box.getNum_Nodes(); i++){
-            double custom = Box.findNode(i).getProp(WHICHPARA::CUSTOM).at(0);
-            double cencon = Box.findNode(i).getProp(WHICHPARA::CON).at(0);
-            Box.findNode(i).Custom_Value = (dfdcon(cencon)-0.5*custom);
+    Box.outFile(1000);
+    for(int istep = 0; istep<201;istep++){
+        Box.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CON);
+        for(auto& node : Box.SimuNodes){
+            double custom = node.Con_Node.getLap().at(0);
+            double cencon = node.getProp(WHICHPARA::CON).at(0);
+            node.Custom_Value = (dfdcon(cencon)-0.5*custom);
         }
 
-        vector<double> temp;
-        temp = Box.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CUSTOM);
+        Box.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CUSTOM);
         
-        for(int i = 0; i<Box.getNum_Nodes(); i++){
-            double cencon = Box.findNode(i).getProp(WHICHPARA::CON).at(0);
-            cencon+= 0.01*temp.at(i);
-            if(cencon>=0.9999)cencon=0.9999;
-            if(cencon<=0.0001)cencon=0.0001;
-            Box.findNode(i).Con_Node.updateEntry(cencon);
+        for(auto& node : Box.SimuNodes){
+            double cencon = node.getProp(WHICHPARA::CON).at(0);
+            cencon+= 0.01*node.CustLap;
+            Box.threshold(cencon,0.0001,0.9999);
+            node.Con_Node.updateEntry(0,cencon);
         }
     
-        vector<double> c(Box.getNum_Nodes(),0.4);
-        for(int i = 0; i<Box.getNum_Nodes(); i++){
-            c.at(i)= Box.findNode(i).getProp(WHICHPARA::CON).at(0);
-        }
-
-        if(fmod(istep,nprint)==0)
+        if(istep == 200||istep ==100||istep == 0)
         {   
             cout<<"Done Step: "<<istep<<endl;
-            write_vtk_grid_values0(Box.getDim(WHICHDIM::X),Box.getDim(WHICHDIM::Y),Box.getStepLength(WHICHDIM::X),Box.getStepLength(WHICHDIM::Y),istep,c);
+            Box.outFile(istep);
         }  
+
 
     }
     return 0;
