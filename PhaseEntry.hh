@@ -8,6 +8,8 @@
 class PhaseEntry{
     private:
         double PhaseFrac = 0;
+        double Lap = 0;
+        double Grad = 0;
         unsigned index;
     public:
 
@@ -43,12 +45,26 @@ class PhaseEntry{
         int getindex(){
             return index;
         }
+        double getLap(){
+            return Lap;
+        }
+        double getGrad(){
+            return Grad;
+        }
+
         void setPhsFrac(const double _PhsFrc ){
             PhaseFrac = _PhsFrc;
         }
         void setindex(const int _index){
             index = _index;
         }
+        void setLap(const double _Lap){
+            Lap = _Lap;
+        }
+        void setGrad(const double _Grad){
+            Grad = _Grad;
+        }
+        
 
 
 }Def_PhsEnt;

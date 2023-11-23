@@ -13,6 +13,7 @@ class PhaseNode{
     private:
         unsigned Num_PhsFrc;
         std::vector<PhaseEntry> Entrys;
+        
     public:
 // Construct & Deconstruct Functions
         PhaseNode(){
@@ -51,6 +52,11 @@ class PhaseNode{
                 Entrys.push_back(Def_PhsEnt);
             }
             Num_PhsFrc = Entrys.size();
+            int dumy = 0;
+            for(auto &ent : Entrys){
+                ent.setindex(dumy);
+                ++dumy;
+            }
         }
 
         unsigned getNums(){
@@ -111,6 +117,26 @@ class PhaseNode{
             for(auto &ent : Entrys){
                 if(ent.getindex() == index){
                     ent.setPhsFrac(_PhsFrac);
+                    return;
+                }
+            }
+            throw std::out_of_range("Not in entry list");
+        }
+
+        void updateLap(unsigned index, double _Lap){
+            for(auto &ent : Entrys){
+                if(ent.getindex() == index){
+                    ent.setLap(_Lap);
+                    return;
+                }
+            }
+            throw std::out_of_range("Not in entry list");
+        }
+
+        void updateGrad(unsigned index, double _Grad){
+            for(auto &ent : Entrys){
+                if(ent.getindex() == index){
+                    ent.setGrad(_Grad);
                     return;
                 }
             }
