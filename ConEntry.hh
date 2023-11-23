@@ -44,16 +44,20 @@ class ConEntry{
     private:
         double Concentration = 0;
         ELEMENT Element;
+        int index = 0;
         double Lap = 0;
         double Grad = 0;
     public:
     
         ConEntry(){
             Element = ELEMENT::VA;
+            index = 0;
         }
+
         ConEntry(ELEMENT _element){
             Element = _element;
         }
+
         ConEntry(ELEMENT _element, double _con):ConEntry(_element){
             Concentration = _con;
         }
@@ -61,11 +65,17 @@ class ConEntry{
         ConEntry(const ConEntry& _Entry){
             Concentration = _Entry.Concentration;
             Element = _Entry.Element;
+            index = _Entry.index;
+            Lap = _Entry.Lap;
+            Grad = _Entry.Grad;
         }
 
         ConEntry& operator= (const ConEntry& _Entry){
             Concentration = _Entry.Concentration;
             Element = _Entry.Element;
+            index = _Entry.index;
+            Lap = _Entry.Lap;
+            Grad = _Entry.Grad;
             return *this;
         }
 
@@ -74,7 +84,7 @@ class ConEntry{
         
 /*************************************************************/
 
-        bool operator== (const ConEntry& _Entry){
+/**/    bool operator== (const ConEntry& _Entry){
             bool result;
             ((Concentration == _Entry.Concentration)&&(Element == _Entry.Element)) ? (result = true) : (result = false);
             return result;
@@ -85,6 +95,9 @@ class ConEntry{
         }
         ELEMENT getElement(){
             return Element;
+        }
+        int getindex(){
+            return index;
         }
         double getLap(){
             return Lap;
@@ -99,6 +112,9 @@ class ConEntry{
         }
         void setElement(const ELEMENT _element){
             Element = _element;
+        }
+        void setindex(const int _index){
+            index = _index;
         }
         void setLap(const double _Lap){
             Lap = _Lap;

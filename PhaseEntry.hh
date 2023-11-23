@@ -20,20 +20,24 @@ class PhaseEntry{
         PhaseEntry(const PhaseEntry& _Entry){
             PhaseFrac = _Entry.PhaseFrac;
             index = _Entry.index;
+            Lap = _Entry.Lap;
+            Grad = _Entry.Grad;
         }
 
         PhaseEntry& operator= (const PhaseEntry& _Entry){
             PhaseFrac = _Entry.PhaseFrac;
             index = _Entry.index;
+            Lap = _Entry.Lap;
+            Grad = _Entry.Grad;
             return *this;
         }
 
         ~PhaseEntry(){
         }
 
-/***    **********************************************************/
+/*************************************************************/
         
-        bool operator== (const PhaseEntry& _Entry){
+/**/    bool operator== (const PhaseEntry& _Entry){
             bool result;
             ((PhaseFrac == _Entry.PhaseFrac)&&(index == _Entry.index)) ? (result = true) : (result = false);
             return result;

@@ -102,11 +102,8 @@ int simuflag = 2;
                         }
                     }
     }
-    mesh.showGlobalInfo();
 
-    mesh.Laplacian(STENCILE::FIVEPOINT, WHICHPARA::CON);
     
-
     mesh.outFile(0);    
 
     auto stop =  std::chrono::high_resolution_clock::now();

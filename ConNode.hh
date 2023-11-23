@@ -18,11 +18,17 @@ class ConNode{
         ConNode(){
             Entrys.push_back(Def_ConEnt);
             Num_Elemt = 1;
+            Entrys.at(0).setindex(0);
         } //Accept Default Parameters
         
         ConNode(std::vector<ConEntry> EntryList){
             Entrys = EntryList;
             Num_Elemt = EntryList.size();
+            int dumy = 0;
+            for(auto &ent : Entrys){
+                ent.setindex(dumy);
+                ++dumy;
+            }
         }
 
         ConNode(std::vector<ELEMENT> ElementList){
@@ -30,6 +36,7 @@ class ConNode{
             for (unsigned i = 0; i < Num_Elemt; i++){
                 Entrys.push_back(Def_ConEnt);
                 Entrys.at(i).setElement(ElementList.at(i));
+                Entrys.at(i).setindex(i);
             }
         }
 
@@ -140,6 +147,27 @@ class ConNode{
             }
             throw std::invalid_argument("No such element");
         }
+
+        void updateLap(unsigned index, double _Lap){
+            for(auto &ent : Entrys){
+                if(ent.getindex() == index){
+                    ent.setLap(_Lap);
+                    return;
+                }
+            }
+            throw std::out_of_range("Not in entry list");
+        }
+
+        void updateGrad(unsigned index, double _Grad){
+            for(auto &ent : Entrys){
+                if(ent.getindex() == index){
+                    ent.setGrad(_Grad);
+                    return;
+                }
+            }
+            throw std::out_of_range("Not in entry list");
+        }
+        
 
         void updateEntry(double _con){
             if(Num_Elemt == 1){
