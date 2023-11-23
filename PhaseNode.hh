@@ -43,6 +43,16 @@ class PhaseNode{
             Entrys.clear();
         }
 
+/*************************************************************/
+
+        void addEntry(int num){
+            for (int i = 0; i < num; ++i)
+            {
+                Entrys.push_back(Def_PhsEnt);
+            }
+            Num_PhsFrc = Entrys.size();
+        }
+
         unsigned getNums(){
             return Num_PhsFrc;
         }

@@ -44,6 +44,20 @@ class SimulationMesh{
             SimuNodes.clear();
         };
 
+        void addEntry(WHICHPARA whichpara, int num){
+            switch (whichpara)
+            {
+            case WHICHPARA::CON :
+                for(auto & node : SimuNodes)node.Con_Node.addEntry(num);
+                break;
+            case WHICHPARA::PHSFRAC :
+                for(auto & node : SimuNodes)node.Phs_Node.addEntry(num);
+                break;
+            default:
+                break;
+            }
+        }
+
 /*************************************************************/
 
         void fillNodes(MeshNode Nodes){ // fill mesh with SimuNodes.at(i)s 
