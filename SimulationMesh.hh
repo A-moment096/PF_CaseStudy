@@ -237,7 +237,7 @@ class SimulationMesh{
 
 /*************************************************************/
 
-        std::vector<double> Laplacian (int whichSTNCL, int whichPara){
+/**/    std::vector<double> Laplacian (int whichSTNCL, int whichPara){
             std::vector<double> result(Num_Nodes,0.0);
             double dx = getStepLength(WHICHDIM::X);
             double dy = getStepLength(WHICHDIM::Y);

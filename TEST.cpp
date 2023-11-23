@@ -7,11 +7,10 @@ using std::vector;
 int main(){
     auto start =  std::chrono::high_resolution_clock:: now();
     
-    PhaseNode phs_node
-    (std::vector<PhaseEntry> {Def_PhsEnt,Def_PhsEnt});
-    PhaseEntry ent;
+    PhaseNode phs_node(std::vector<PhaseEntry> {Def_PhsEnt,Def_PhsEnt});
     MeshNode node(phs_node);
     SimulationMesh mesh({64,64,64},node);
+
     vector<double> ones(mesh.getNum_Nodes(),1.0);
     vector<double> zeros(mesh.getNum_Nodes(),0.0);
 
@@ -31,7 +30,7 @@ int main(){
             }
         }
     }
-    std::vector<double> out = mesh.getUni_Prop(WHICHPARA::PHSFRAC);
+    // std::vector<double> out = mesh.getUni_Prop(WHICHPARA::PHSFRAC);
     
 
     auto stop =  std::chrono::high_resolution_clock::now();

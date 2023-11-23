@@ -46,7 +46,7 @@ int main()
         if(fmod(istep,nprint)==0)
         {   
             cout<<"Done Step: "<<istep<<endl;
-            write_vtk_grid_values(Box.getDim(WHICHDIM::X),Box.getDim(WHICHDIM::Y),Box.getStepLength(WHICHDIM::X),Box.getStepLength(WHICHDIM::Y),istep,c);
+            write_vtk_grid_values0(Box.getDim(WHICHDIM::X),Box.getDim(WHICHDIM::Y),Box.getStepLength(WHICHDIM::X),Box.getStepLength(WHICHDIM::Y),istep,c);
         }  
 
     }
