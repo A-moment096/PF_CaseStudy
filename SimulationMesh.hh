@@ -252,8 +252,8 @@ class SimulationMesh{
 
 /*************************************************************/
 
-/**/    std::vector<double> Laplacian (int whichSTNCL, int whichPara){
-            std::vector<double> result(Num_Nodes,0.0);
+/**/    void Laplacian (int whichSTNCL, int whichPara, int whichindex){
+            double result = 0;
             double dx = getStepLength(WHICHDIM::X);
             double dy = getStepLength(WHICHDIM::Y);
             double dz = getStepLength(WHICHDIM::Z);
@@ -266,18 +266,22 @@ class SimulationMesh{
                     double b = findNode(i).Backward->getProp(whichPara).at(0);
                     double l = findNode(i).Left->getProp(whichPara).at(0);
                     double r = findNode(i).Right->getProp(whichPara).at(0);
-    
-                    result.at(i) = ((f+b+l+r-4*c)/(dx*dy*dz));
+
+                    result = ((f+b+l+r-4*c)/(dx*dy*dz));
+                    if(whichPara == WHICHPARA::PHSFRAC)
+                    findNode(i).Phs_Node.updateLap(whichindex,result);
+                    if(whichPara == WHICHPARA::CON)
+                    findNode(i).Con_Node.updateLap(whichindex,result);
+
                 }
             }
-            return result;
+            return;
         }
 };
 
 void SimulationMesh::showGlobalInfo(){
     std::cout<<"SimulationMesh Properties:\n";
     std::cout<<"Mesh Size:\t\t"<<BoxX<<"\u0078"<<BoxY<<"\u0078"<<BoxZ<<"\n";
-    std::cout<<"Number of Nodes:\t"<<Num_Nodes<<"\n";
     std::cout<<"Elements:\t\t";
     for(auto elements : SimuNodes.at(0).Con_Node.getElementList())
     std::cout<<elements<<" ";
