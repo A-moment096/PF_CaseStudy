@@ -142,12 +142,16 @@ class SimulationMesh{
                 for(auto val : node.getProp(whichpara)){
                     sum += val*val;
                 }
-                sum = sqrt(sum) / node.getNum(whichpara);
+                sum = sqrt(sum);
+                threshold(sum,0.0001,0.9999);
                 result.push_back(sum);
             }
             return result;
         }
 
+        void threshold(double &val, double min, double max){
+            val>max?val = max:(val<0.0001?val = 0.0001:val = val);
+        }
 
         std::vector<int> transCoord(int where){
             if(where<Num_Nodes){       
@@ -341,6 +345,15 @@ void SimulationMesh::outFile(int istep){
 	    	outfile<<meshphs.at(num).at(i)<<"\n";
     }
 
+std::vector<double> normed_phs(getUni_Prop(WHICHPARA::PHSFRAC));
+
+        sprintf(varname,"PHSFRAC_NORMED");
+	    outfile<<"SCALARS "<<varname<<"  float  1\n";
+	    outfile<<"LOOKUP_TABLE default\n";
+        #pragma parallel for
+	    for(int i=0;i<Num_Nodes;i++)
+	    	outfile<<normed_phs.at(i)<<"\n";
+    
     std::vector<std::vector<double>> meshcon;
     for(int num = 0; num < getNum_Prop(WHICHPARA::CON); num ++){
         meshcon.push_back(getMeshProp(WHICHPARA::CON,num));

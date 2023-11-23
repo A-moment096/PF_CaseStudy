@@ -44,6 +44,8 @@ class ConEntry{
     private:
         double Concentration = 0;
         ELEMENT Element;
+        double Lap = 0;
+        double Grad = 0;
     public:
     
         ConEntry(){
@@ -84,11 +86,25 @@ class ConEntry{
         ELEMENT getElement(){
             return Element;
         }
+        double getLap(){
+            return Lap;
+        }
+        double getGrad(){
+            return Grad;
+        }
+
+
         void setCon(const double _Con ){
             Concentration = _Con;
         }
         void setElement(const ELEMENT _element){
             Element = _element;
+        }
+        void setLap(const double _Lap){
+            Lap = _Lap;
+        }
+        void setGrad(const double _Grad){
+            Grad = _Grad;
         }
 
 }Def_ConEnt;

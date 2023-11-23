@@ -6,18 +6,15 @@ using std::vector;
 
 int main(){
     auto start =  std::chrono::high_resolution_clock:: now();
-    
-    PhaseNode phs_node(std::vector<PhaseEntry> (2,Def_PhsEnt));
-    ConNode con_node;
-    MeshNode node(phs_node,con_node);
-    SimulationMesh mesh({100,100,1},{0.5,0.5,0},node);
 
+    MeshNode node(PhaseNode (std::vector<PhaseEntry> (2,Def_PhsEnt)),Def_ConNode);
+    SimulationMesh mesh({100,100,1},{0.5,0.5,0},node);
 
     double Dvol = 0.040, Dvap = 0.002, Dsurf = 16.0, Dgb = 1.6, kappa_rho = 5.0, kappa_eta = 2.0, L = 10.0;
     int nstep = 5000, nprint = 50; double dtime = 0.0001;
 
 // Initializer
-int simuflag = 1;
+int simuflag = 2;
     if(simuflag == 0){    
     double cent = mesh.getDim(WHICHDIM::X)/2;
     double rad1 = 20, rad2 = 10;
@@ -40,7 +37,29 @@ int simuflag = 1;
                 }
         }
     }
+
     if(simuflag == 1){
+    double cent = mesh.getDim(WHICHDIM::X)/2;
+    double rad1 = 10;
+    int Px = mesh.getDim(0)/2, Py = Px;
+
+        #pragma omp parallel for collapse(2)
+            for(int i = 0; i < mesh.getDim(WHICHDIM::X); ++i){
+                for(int j = 0; j < mesh.getDim(WHICHDIM::Y); j++){
+                    double &&dis = ((i-Px)*(i-Px)+(j-Py)*(j-Py));
+                    if( dis >= rad1*rad1 && i >= Px) {
+                        mesh.updateNodeCon({i,j,0},0.9999);
+                        mesh.updateNodePhs({i,j,0},0,0.9999);
+                    }
+                    if( dis >= rad1*rad1 && i <= Px) {
+                        mesh.updateNodeCon({i,j,0},0.9999);
+                        mesh.updateNodePhs({i,j,0},1,0.9999);
+                    }
+                }
+        }
+    }
+
+    if(simuflag == 2){
         mesh.addEntry(WHICHPARA::PHSFRAC,7);
         vector<int> particleCoord (18,0);
         particleCoord.at(0) = 29;
@@ -69,7 +88,7 @@ int simuflag = 1;
                 for(int i = 0; i < mesh.getDim(WHICHDIM::X); ++i)
                     for(int j = 0; j < mesh.getDim(WHICHDIM::Y); ++j){
                         double dis = (i-particleCoord.at(2*coord))*(i-particleCoord.at(2*coord))+(j-particleCoord.at(2*coord+1))*(j-particleCoord.at(2*coord+1));
-                        if(coord<6){
+                        if(coord<5){
                             if(dis<=rad1*rad1){
                                 mesh.updateNodeCon({i,j,0},0.9999);
                                 mesh.updateNodePhs({i,j,0},coord,0.9999);
@@ -79,15 +98,13 @@ int simuflag = 1;
                             if(dis<=rad2*rad2){
                                 mesh.updateNodeCon({i,j,0},0.9999);
                                 mesh.updateNodePhs({i,j,0},coord,0.9999);
-
                             }
                         }
                     }
-    mesh.showGlobalInfo();
     }
     mesh.showGlobalInfo();
 
-    mesh.outFile(1);    
+    mesh.outFile(0);    
 
     auto stop =  std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds> (stop-start);
