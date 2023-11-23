@@ -26,12 +26,12 @@ class MeshNode{
         ConNode Con_Node;
 
         
-            MeshNode* Up = NULL;
-            MeshNode* Down = NULL;
-            MeshNode* Forward = NULL;
-            MeshNode* Backward = NULL;
-            MeshNode* Left = NULL;
-            MeshNode* Right = NULL;
+            MeshNode* Up = nullptr;
+            MeshNode* Down = nullptr;
+            MeshNode* Forward = nullptr;
+            MeshNode* Backward = nullptr;
+            MeshNode* Left = nullptr;
+            MeshNode* Right = nullptr;
         
 
      // Construct & Deconstruct Functions
@@ -50,12 +50,12 @@ class MeshNode{
         MeshNode(ConNode _con_node):MeshNode(Def_PhsNode,_con_node){}
         
         ~MeshNode(){
-        Up = NULL;
-        Down = NULL;
-        Forward = NULL;
-        Backward = NULL;
-        Left = NULL;
-        Right = NULL;
+        Up = nullptr;
+        Down = nullptr;
+        Forward = nullptr;
+        Backward = nullptr;
+        Left = nullptr;
+        Right = nullptr;
         };
      // Manipulate Methods
 
