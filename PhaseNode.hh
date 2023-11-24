@@ -20,13 +20,13 @@ class PhaseNode{
         PhaseNode(){
             Entrys.push_back(Def_PhsEnt);
             Num_Ent = 1;
-            Entrys.at(0).index = 0;
+            (*this)(0).Index = 0;
         } //Accept Default Parameters
         
         PhaseNode(std::vector<PhaseEntry> EntryList){
             Entrys = EntryList;
             Num_Ent = EntryList.size();
-            update_index();
+            updateIndex();
         }
 
         PhaseNode(const PhaseNode &_node){
@@ -38,6 +38,12 @@ class PhaseNode{
             Num_Ent = _node.Num_Ent;
             Entrys = _node.Entrys;
             return *this;
+        }
+
+        PhaseEntry& operator() (const unsigned _Index){
+            if(_Index<Num_Ent)
+            return Entrys.at(_Index);
+            else throw std::out_of_range("No such entry");
         }
 
         ~PhaseNode(){
@@ -69,19 +75,23 @@ class PhaseNode{
             }
             return result;
         }
-
-        double getVal(int _index){
-            return Entrys.at(_index).PhaseFrac;
+        double getVal(unsigned _Index){
+            if(_Index < Num_Ent)
+            return (*this)(_Index).PhaseFrac;
+            else throw std::out_of_range("No Such Index");
         }
 
-        double getLap(int _index){
-            return Entrys.at(_index).Lap;
+        double getLap(unsigned _Index){
+            if(_Index < Num_Ent)
+            return (*this)(_Index).Lap;
+            else throw std::out_of_range("No Such Index");
         }
 
-        double getGrad(int _index){
-            return Entrys.at(_index).Grad;
+        double getGrad(unsigned _Index){
+            if(_Index < Num_Ent)
+            return (*this)(_Index).Grad;
+            else throw std::out_of_range("No Such Index");
         }
-
 
         /*****************************************************************/
 
@@ -91,14 +101,14 @@ class PhaseNode{
                 Entrys.push_back(Def_PhsEnt);
             }
             Num_Ent = Entrys.size();
-            update_index();
+            updateIndex();
         }
 
-        void deletEntry(unsigned _index){
+        void deletEntry(unsigned _Index){
             if(Num_Ent <= 1) throw std::out_of_range("Last entry");
             else
                 for(auto &ent : Entrys){
-                    if(ent.index == _index){
+                    if(ent.Index == _Index){
                         std::vector<PhaseEntry>::iterator delPos = std::find(Entrys.begin(),Entrys.end(),ent);
                         Entrys.erase(delPos);
                         return;
@@ -107,9 +117,9 @@ class PhaseNode{
             throw std::out_of_range("Not in entry list");
         }
 
-        void updateEntry(unsigned _index, double _PhsFrac){
+        void updateVal(unsigned _Index, double _PhsFrac){
             for(auto &ent : Entrys){
-                if(ent.index == _index){
+                if(ent.Index == _Index){
                     ent.PhaseFrac = _PhsFrac;
                     return;
                 }
@@ -117,9 +127,9 @@ class PhaseNode{
             throw std::out_of_range("Not in entry list");
         }
 
-        void updateLap(unsigned _index, double _Lap){
+        void updateLap(unsigned _Index, double _Lap){
             for(auto &ent : Entrys){
-                if(ent.index == _index){
+                if(ent.Index == _Index){
                     ent.Lap = _Lap;
                     return;
                 }
@@ -127,9 +137,9 @@ class PhaseNode{
             throw std::out_of_range("Not in entry list");
         }
 
-        void updateGrad(unsigned _index, double _Grad){
+        void updateGrad(unsigned _Index, double _Grad){
             for(auto &ent : Entrys){
-                if(ent.index == _index){
+                if(ent.Index == _Index){
                     ent.Grad = _Grad;
                     return;
                 }
@@ -139,9 +149,9 @@ class PhaseNode{
 
         /*****************************************************************/
 
-        void update_index(){
+        void updateIndex(){
             for(unsigned i = 0; i < Num_Ent; i++){
-                Entrys.at(i).index = (i);
+                (*this)(i).Index = (i);
             }
         }
 

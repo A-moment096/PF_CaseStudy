@@ -125,17 +125,17 @@ class MeshNode{
             return {};
         }
 
-        double getLap(unsigned whichpara, int _index){
+        double getLap(unsigned whichpara, int _Index){
             switch (whichpara)
             {
             case WHICHPARA::CON :
-                return Con_Node.getLap(_index);
+                return Con_Node.getLap(_Index);
                 break;
             case WHICHPARA::PHSFRAC :
-                return Phs_Node.getLap(_index);
+                return Phs_Node.getLap(_Index);
                 break;
             case WHICHPARA::CUSTOM :
-                return Cust_Node.getLap(_index);
+                return Cust_Node.getLap(_Index);
                 break;
             default:
                 break;
@@ -143,17 +143,17 @@ class MeshNode{
             return {};
         }
 
-        double getGrad(unsigned whichpara, int _index){
+        double getGrad(unsigned whichpara, int _Index){
             switch (whichpara)
             {
             case WHICHPARA::CON :
-                return Con_Node.getGrad(_index);
+                return Con_Node.getGrad(_Index);
                 break;
             case WHICHPARA::PHSFRAC :
-                return Phs_Node.getGrad(_index);
+                return Phs_Node.getGrad(_Index);
                 break;
             case WHICHPARA::CUSTOM :
-                return Cust_Node.getGrad(_index);
+                return Cust_Node.getGrad(_Index);
                 break;
             
             default:
@@ -188,7 +188,7 @@ void MeshNode::showNode(){
     std::cout<<"Phase Index:\tPhase Fraction:\t\tElement:\tConcentration:\n";
     for(int i = 0; i < Phs_Node.Num_Ent; i++){
         for(int j = 0; j < Con_Node.Num_Ent; j++){
-            std::cout<<Phs_Node.Entrys.at(i).index<<"\t\t"<<std::fixed<<std::setprecision(6)<<Phs_Node.getVal().at(i)<<"\t\t";
+            std::cout<<Phs_Node.Entrys.at(i).Index<<"\t\t"<<std::fixed<<std::setprecision(6)<<Phs_Node.getVal().at(i)<<"\t\t";
             std::cout<<Con_Node.Entrys.at(j).Element<<"\t\t"<<std::fixed<<std::setprecision(6)<<Con_Node.getVal().at(j)<<"\n";
         }
         std::cout<<"\n";

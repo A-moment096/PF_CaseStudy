@@ -44,7 +44,7 @@ class ConEntry{
     public:
         double Concentration = 0;
         ELEMENT Element;
-        int index = 0;
+        int Index = 0;
         double Lap = 0;
         double Grad = 0;
     
@@ -52,7 +52,7 @@ class ConEntry{
      
         ConEntry(){
             Element = ELEMENT::VA;
-            index = 0;
+            Index = 0;
         }
 
         ConEntry(ELEMENT _element){
@@ -66,7 +66,7 @@ class ConEntry{
         ConEntry(const ConEntry& _Entry){
             Concentration = _Entry.Concentration;
             Element = _Entry.Element;
-            index = _Entry.index;
+            Index = _Entry.Index;
             Lap = _Entry.Lap;
             Grad = _Entry.Grad;
         }
@@ -74,7 +74,7 @@ class ConEntry{
         ConEntry& operator= (const ConEntry& _Entry){
             Concentration = _Entry.Concentration;
             Element = _Entry.Element;
-            index = _Entry.index;
+            Index = _Entry.Index;
             Lap = _Entry.Lap;
             Grad = _Entry.Grad;
             return *this;

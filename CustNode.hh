@@ -30,8 +30,8 @@ public:
         CustGrad.clear();
     }
 
-    void updateLap(int _index, double _val){
-        CustLap.at(_index) = _val;
+    void updateLap(int _Index, double _val){
+        CustLap.at(_Index) = _val;
     }
 
     void addEntry(int num){
@@ -45,16 +45,16 @@ public:
         return CustVal;
     }
 
-    double getVal(int _index){
-        return CustVal.at(_index);
+    double getVal(int _Index){
+        return CustVal.at(_Index);
     }
 
-    double getLap(int _index){
-        return CustLap.at(_index);
+    double getLap(int _Index){
+        return CustLap.at(_Index);
     }
 
-    double getGrad(int _index){
-        return CustGrad.at(_index);
+    double getGrad(int _Index){
+        return CustGrad.at(_Index);
     }
 
 }Def_CustNode;

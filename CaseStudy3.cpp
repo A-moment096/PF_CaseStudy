@@ -129,7 +129,7 @@ for (int istep = 0; istep < nstep; ++istep)
             dfdeta = 12*B*(x*(-2*x+c*x+1-c+node.sumPhsFrac2()));
             double dummy = x-dtime*coefl*(dfdeta-0.5*coefk*node.Phs_Node.getLap(i));
             mesh.threshold(dummy,0.0001,0.9999);
-            node.Phs_Node.updateEntry(i,dummy);
+            node.Phs_Node.updateVal(i,dummy);
         }
     }
 
@@ -146,7 +146,7 @@ for (int istep = 0; istep < nstep; ++istep)
         
         mesh.threshold(dumy,0.0001,0.9999);
 
-        node.Con_Node.updateEntry(0,dumy);
+        node.Con_Node.updateVal(0,dumy);
     }
     
     if(fmod(istep,nprint)==0)

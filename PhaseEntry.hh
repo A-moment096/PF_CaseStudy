@@ -10,24 +10,24 @@ class PhaseEntry{
         double PhaseFrac = 0;
         double Lap = 0;
         double Grad = 0;
-        unsigned index;
+        unsigned Index;
         
 /*************************************************************/
 
         PhaseEntry(){
-            index = 0;
+            Index = 0;
         }
 
         PhaseEntry(const PhaseEntry& _Entry){
             PhaseFrac = _Entry.PhaseFrac;
-            index = _Entry.index;
+            Index = _Entry.Index;
             Lap = _Entry.Lap;
             Grad = _Entry.Grad;
         }
 
         PhaseEntry& operator= (const PhaseEntry& _Entry){
             PhaseFrac = _Entry.PhaseFrac;
-            index = _Entry.index;
+            Index = _Entry.Index;
             Lap = _Entry.Lap;
             Grad = _Entry.Grad;
             return *this;
@@ -39,7 +39,7 @@ class PhaseEntry{
         
 /**/    bool operator== (const PhaseEntry& _Entry){
             bool result;
-            ((PhaseFrac == _Entry.PhaseFrac)&&(index == _Entry.index)) ? (result = true) : (result = false);
+            ((PhaseFrac == _Entry.PhaseFrac)&&(Index == _Entry.Index)) ? (result = true) : (result = false);
             return result;
         }
 

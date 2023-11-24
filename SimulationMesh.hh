@@ -122,14 +122,14 @@ class SimulationMesh{
 
         /*************************************************************/
 
-        std::vector<double> getMeshProp(WHICHPARA whichpara, int index){
+        std::vector<double> getMeshProp(WHICHPARA whichpara, int Index){
             std::vector<double> result(Num_Nodes,0.0);
             #pragma parallel for
-            if(index<getNum_Prop(whichpara))
+            if(Index<getNum_Prop(whichpara))
             for(int i = 0; i < Num_Nodes;i++){
-                result.at(i) = ((*this)(i).getProp(whichpara).at(index));
+                result.at(i) = ((*this)(i).getProp(whichpara).at(Index));
             }
-            else throw std::out_of_range("index out of range");
+            else throw std::out_of_range("Index out of range");
             return result;
         }
 
@@ -176,8 +176,8 @@ class SimulationMesh{
             return (*this)(0).getNum_Ent(which);
         }
         
-        void updateCustValue(int _where,int _index, double _val){
-            (*this)(_where).Cust_Node.CustVal.at(_index) = _val;
+        void updateCustValue(int _where,int _Index, double _val){
+            (*this)(_where).Cust_Node.CustVal.at(_Index) = _val;
         }
 
         /*************************************************************/
@@ -203,23 +203,23 @@ class SimulationMesh{
         }
 
         /*************************************************************/
-        void updateMeshPhs(int index, std::vector<double> _val){
+        void updateMeshPhs(int Index, std::vector<double> _val){
             for(int i = 0; i < Num_Nodes; i++){
-                (*this)(i).Phs_Node.updateEntry(index,_val.at(i));
+                (*this)(i).Phs_Node.updateEntry(Index,_val.at(i));
             }
         }
 
-        void updateNodePhs(int where,int index, double _phs){
-            (*this)(where).Phs_Node.updateEntry(index,_phs);
+        void updateNodePhs(int where,int Index, double _phs){
+            (*this)(where).Phs_Node.updateEntry(Index,_phs);
         }
 
-        void updateNodePhs(std::vector<int> where, int index, double _phs){
-            updateNodePhs(transCoord(where),index,_phs);
+        void updateNodePhs(std::vector<int> where, int Index, double _phs){
+            updateNodePhs(transCoord(where),Index,_phs);
         }
 
 /*************************************************************/
         void showGlobalInfo(); // show the basic information of the mesh
-        void showNodesProp(WHICHPARA which, int index); // show one of the properties of the (*this)(i)s inside the mesh
+        void showNodesProp(WHICHPARA which, int Index); // show one of the properties of the (*this)(i)s inside the mesh
         void outFile(int istep);
 
 /*************************************************************/
@@ -231,21 +231,21 @@ class SimulationMesh{
             double dz = StepZ;
             if(whichSTNCL = STENCILE::FIVEPOINT){
                 #pragma omp parallel for
-                for(int index = 0; index < (*this)(0).getNum_Ent(whichpara); ++index){
+                for(int Index = 0; Index < (*this)(0).getNum_Ent(whichpara); ++Index){
                     for(auto &node : SimuNodes){
-                        double c = node.getProp(whichpara).at(index);
-                        double f = node.Forward->getProp(whichpara).at(index);
-                        double b = node.Backward->getProp(whichpara).at(index);
-                        double l = node.Left->getProp(whichpara).at(index);
-                        double r = node.Right->getProp(whichpara).at(index);
+                        double c = node.getProp(whichpara).at(Index);
+                        double f = node.Forward->getProp(whichpara).at(Index);
+                        double b = node.Backward->getProp(whichpara).at(Index);
+                        double l = node.Left->getProp(whichpara).at(Index);
+                        double r = node.Right->getProp(whichpara).at(Index);
 
                         result = ((f+b+l+r-4*c)/(dx*dy*dz));
                         if(whichpara == WHICHPARA::PHSFRAC)
-                            node.Phs_Node.updateLap(index,result);
+                            node.Phs_Node.updateLap(Index,result);
                         if(whichpara == WHICHPARA::CON)
-                            node.Con_Node.updateLap(index,result);
+                            node.Con_Node.updateLap(Index,result);
                         if(whichpara == WHICHPARA::CUSTOM)
-                            node.Cust_Node.updateLap(index,result);
+                            node.Cust_Node.updateLap(Index,result);
                     }
                 }
             }
@@ -269,14 +269,14 @@ void SimulationMesh::showGlobalInfo(){
     std::cout<<"\n-----------------------------------------------------------------\n"<<std::endl;
 }
 
-void SimulationMesh::showNodesProp(WHICHPARA which, int index){ //which para, index of para
-    if(which == WHICHPARA::CON)std::cout<<"Concentration of "<<(*this)(0).Con_Node.Entrys.at(index).Element<<"\n";
-    if(which == WHICHPARA::PHSFRAC)std::cout<<"Order Parameter of "<<index<<" grain\n";
+void SimulationMesh::showNodesProp(WHICHPARA which, int Index){ //which para, Index of para
+    if(which == WHICHPARA::CON)std::cout<<"Concentration of "<<(*this)(0).Con_Node.Entrys.at(Index).Element<<"\n";
+    if(which == WHICHPARA::PHSFRAC)std::cout<<"Order Parameter of "<<Index<<" grain\n";
     if(which == WHICHPARA::CUSTOM)std::cout<<"Custom value \n";
     for(long i = 0; i < Num_Nodes; i++){
         std::cout<<std::fixed<<std::setprecision(10)<<
-            // (*this)(i).getProp(which).at(index)
-            (*this)(i).getLap(WHICHPARA::CON,index)
+            // (*this)(i).getProp(which).at(Index)
+            (*this)(i).getLap(WHICHPARA::CON,Index)
         <<" ";
         if(i%MeshX==MeshX-1)std::cout<<"\n";
         if(i%(MeshX*MeshY) == MeshX*MeshY-1)std::cout<<"\n";

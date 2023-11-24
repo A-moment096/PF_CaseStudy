@@ -20,21 +20,21 @@ class ConNode{
         ConNode(){
             Entrys.push_back(Def_ConEnt);
             Num_Ent = 1;
-            Entrys.at(0).index  = 0;
+            (*this)(0).Index  = 0;
         } //Accept Default Parameters
         
         ConNode(std::vector<ConEntry> EntryList){
             Entrys = EntryList;
             Num_Ent = EntryList.size();
-            update_index();
+            updateIndex();
         }
 
         ConNode(std::vector<ELEMENT> ElementList){
             Num_Ent = ElementList.size();
             for (unsigned i = 0; i < Num_Ent; i++){
                 Entrys.push_back(Def_ConEnt);
-                Entrys.at(i).Element = (ElementList.at(i));
-                Entrys.at(i).index  = i;
+                (*this)(i).Element = (ElementList.at(i));
+                (*this)(i).Index  = i;
             }
         }
 
@@ -47,6 +47,12 @@ class ConNode{
             Num_Ent = _node.Num_Ent;
             Entrys = _node.Entrys;
             return *this;
+        }
+                
+        ConEntry& operator() (const unsigned _Index){
+            if(_Index<Num_Ent)
+            return Entrys.at(_Index);
+            else throw std::out_of_range("No such entry");
         }
 
         ~ConNode(){
@@ -79,27 +85,33 @@ class ConNode{
             return result;
         }
 
-        double getVal(int _index){
-            return Entrys.at(_index).Concentration;
+        double getVal(unsigned _Index){
+            if(_Index < Num_Ent)
+            return (*this)(_Index).Concentration;
+            else throw std::out_of_range("No Such Index");
         }
 
-        double getLap(int _index){
-            return Entrys.at(_index).Lap;
+        double getLap(unsigned _Index){
+            if(_Index < Num_Ent)
+            return (*this)(_Index).Lap;
+            else throw std::out_of_range("No Such Index");
         }
 
-        double getGrad(int _index){
-            return Entrys.at(_index).Grad;
+        double getGrad(unsigned _Index){
+            if(_Index < Num_Ent)
+            return (*this)(_Index).Grad;
+            else throw std::out_of_range("No Such Index");
         }
 
         /*************************************************************/
 
-        void addEntry(int num){
-            for (int i = 0; i < num; ++i)
+        void addEntry(unsigned num){
+            for (unsigned i = 0; i < num; ++i)
             {
                 Entrys.push_back(Def_ConEnt);
             }
             Num_Ent = Entrys.size();
-            update_index();
+            updateIndex();
         }
 
         void deletEntry(ELEMENT delElemnt){
@@ -115,7 +127,20 @@ class ConNode{
             throw std::invalid_argument("No such element");
         }
 
-        void updateEntry(ELEMENT _elemnt,double _con){
+        void deletEntry(unsigned _Index){
+            if(Num_Ent <= 1) throw std::out_of_range("Last entry");
+            else
+                for(auto &ent : Entrys){
+                    if(ent.Index == _Index){
+                        std::vector<ConEntry>::iterator delPos = std::find(Entrys.begin(),Entrys.end(),ent);
+                        Entrys.erase(delPos);
+                        return;
+                    }
+                }
+            throw std::out_of_range("Not in entry list");
+        }
+
+        void updateVal(ELEMENT _elemnt,double _con){
             for(auto &ent : Entrys){
                 if(ent.Element == _elemnt){
                     ent.Concentration = _con;
@@ -125,9 +150,9 @@ class ConNode{
             throw std::invalid_argument("No such element");
         }
 
-        void updateEntry(int _index,double _con){
+        void updateVal(unsigned _Index,double _con){
             for(auto &ent : Entrys){
-                if(ent.index == _index){
+                if(ent.Index == _Index){
                     ent.Concentration = _con;
                     return;
                 }
@@ -135,9 +160,9 @@ class ConNode{
             throw std::invalid_argument("No such element");
         }
 
-        void updateLap(unsigned _index, double _Lap){
+        void updateLap(unsigned _Index, double _Lap){
             for(auto &ent : Entrys){
-                if(ent.index == _index){
+                if(ent.Index == _Index){
                     ent.Lap = _Lap;
                     return;
                 }
@@ -145,9 +170,9 @@ class ConNode{
             throw std::out_of_range("Not in entry list");
         }
 
-        void updateGrad(unsigned _index, double _Grad){
+        void updateGrad(unsigned _Index, double _Grad){
             for(auto &ent : Entrys){
-                if(ent.index == _index){
+                if(ent.Index == _Index){
                     ent.Grad = _Grad;
                     return;
                 }
@@ -157,9 +182,9 @@ class ConNode{
     
         /*************************************************************/
 
-        void update_index(){
+        void updateIndex(){
             for(unsigned i = 0; i < Num_Ent; i++){
-                Entrys.at(i).index = (i);
+                (*this)(i).Index = i;
             }
         }
 }Def_ConNode;
