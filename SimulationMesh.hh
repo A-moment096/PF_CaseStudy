@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <filesystem>
+
 #include "MeshNode.hh"
 
 enum WHICHDIM{X,Y,Z};
@@ -207,12 +209,8 @@ class SimulationMesh{
             updateNodePhs(transCoord(where),Index,_phs);
         }
 
-/*************************************************************/
-        void showGlobalInfo(); // show the basic information of the mesh
-        void showNodesProp(WHICHPARA which, int Index); // show one of the properties of the (*this)(i)s inside the mesh
-        void outFile(int istep);
 
-/*************************************************************/
+        /*************************************************************/
 
 /**/    void Laplacian (STENCILE whichSTNCL, WHICHPARA whichpara){
             double result = 0;
@@ -246,6 +244,14 @@ class SimulationMesh{
             Laplacian(STENCILE::FIVEPOINT,whichpara);
             return ;
         }
+/*************************************************************/
+        void showGlobalInfo(); // show the basic information of the mesh
+        void showNodesProp(WHICHPARA which, int Index); // show one of the properties of the (*this)(i)s inside the mesh
+
+        void outFilehead(int istep);
+        void outAve(WHICHPARA whichpara, int istep);
+        void outAll(WHICHPARA whichpara, int istep);
+
 };
 
 void SimulationMesh::showGlobalInfo(){
@@ -274,18 +280,35 @@ void SimulationMesh::showNodesProp(WHICHPARA which, int Index){ //which para, In
     std::cout<<"-----------------------------------------------------------------\n"<<std::endl;
 }
 
-inline void SimulationMesh::outFile(int istep){
+inline void SimulationMesh::outFilehead(int istep){
+
+    /*   
+    if(dirname.empty())throw std::invalid_argument("dirname can't be empty");
+    for(auto _ch : dirname){
+        if(std::isspace(_ch))throw std::invalid_argument("dirname can't contain space, maybe use underscore");
+    }
+
+    std::filesystem::create_directories("./Result/"+dirname);
+    char *dir = new char [dirname.length()+1];
+    std::strcpy(dir , dirname.c_str());
 
 	char filename[128];
-	sprintf(filename,"../output/Result_1/time_%04d.vtk", istep);
+	sprintf(filename,"./Result/%s/time_%04d.vtk",dir,istep);
+    */
+	char filename[128];
+    
+	sprintf(filename,"../output/Result/time_%04d.vtk", istep);
 
 	std::ofstream outfile;
 	outfile.open(filename);
+
+    // head
 	outfile<<"# vtk DataFile Version 2.0\n";
 	outfile<<"time_10.vtk\n";
 	outfile<<"ASCII\n";
 	outfile<<"DATASET STRUCTURED_GRID\n";
 
+    // size info
 	outfile<<"DIMENSIONS "<<MeshX<<"  "<<MeshY<<"  "<<MeshZ<<"\n";
 	outfile<<"POINTS "<<Num_Nodes<<"   float\n";
 	double dumx,dumy,dumz;
@@ -297,64 +320,78 @@ inline void SimulationMesh::outFile(int istep){
     
 		    	outfile<<dumx<<"   "<<dumy<<"   "<<dumz<<"\n";
 		    }
-
 	outfile<<"POINT_DATA "<<Num_Nodes<<"\n";
 
+    outfile.close();
+}
+
+inline void SimulationMesh::outAve(WHICHPARA whichpara,int istep){
+
+    char filename[128];
+	sprintf(filename,"../output/Result/time_%04d.vtk", istep);
+	std::ofstream outfile;
+	outfile.open(filename,std::ios::app);
+
     char varname[64];
-    // int phs_num = getNum_Ent(WHICHPARA::PHSFRAC);
-    // int con_num = getNum_Ent(WHICHPARA::CON);
-
-
-        std::vector<std::vector<double>> meshcon;
-
-    for(int num = 0; num < getNum_Ent(WHICHPARA::CON); num ++){
-        meshcon.push_back(getMeshProp(WHICHPARA::CON,num));
+    switch (whichpara)
+    {
+    case WHICHPARA::PHSFRAC:
+        sprintf(varname,"PHSFRAC_AVE");
+        break;
+    case WHICHPARA::CON:
+        sprintf(varname,"CON_AVE");
+        break;
+    case WHICHPARA::CUSTOM:
+        sprintf(varname,"CUST_AVE");
+        break;
+    default:
+        break;
     }
+    std::vector<double> normed_phs(getUni_Prop(whichpara));
+    outfile<<"SCALARS "<<varname<<"  float  1\n";
+    outfile<<"LOOKUP_TABLE default\n";
+    for(int i=0;i<Num_Nodes;i++)
+        outfile<<normed_phs.at(i)<<"\n";
 
-	for(int num = 0; num < getNum_Ent(WHICHPARA::CON); num++){
-        sprintf(varname,"CON_%01d",num);
-	    outfile<<"SCALARS "<<varname<<"  float  1\n";
-	    outfile<<"LOOKUP_TABLE default\n";
+    outfile.close();
 
-	    for(int i=0;i<Num_Nodes;i++)
-	    	outfile<<meshcon.at(num).at(i)<<"\n";
-    }
+}
+
+inline void SimulationMesh::outAll(WHICHPARA whichpara,int istep){
+    char filename[128];
+	sprintf(filename,"../output/Result/time_%04d.vtk", istep);
+	std::ofstream outfile;
+	outfile.open(filename,std::ios::app);
+
+    char varname[64];
 
     std::vector<std::vector<double>> meshphs;
-
-    meshphs.reserve(getNum_Ent(WHICHPARA::PHSFRAC));
-    for(int num = 0; num < getNum_Ent(WHICHPARA::PHSFRAC); num ++){
-        meshphs.push_back(getMeshProp(WHICHPARA::PHSFRAC,num));
+    meshphs.reserve(getNum_Ent(whichpara));
+    for(int num = 0; num < getNum_Ent(whichpara); num ++){
+        meshphs.push_back(getMeshProp(whichpara,num));
     }
 
-    // # parallel for
-    for(int num = 0; num < getNum_Ent(WHICHPARA::PHSFRAC); num++){
-        sprintf(varname,"PHSFRAC_%01d",num);
+    for(int num = 0; num < getNum_Ent(whichpara); num++){     
+        switch (whichpara)
+        {
+        case WHICHPARA::PHSFRAC:
+            sprintf(varname,"PHSFRAC_%01d",num);
+            break;
+        case WHICHPARA::CON:
+            sprintf(varname,"CON__%01d",num);
+            break;
+        case WHICHPARA::CUSTOM:
+            sprintf(varname,"CUST__%01d",num);
+            break;
+        default:
+            break;
+        }
 	    outfile<<"SCALARS "<<varname<<"  float  1\n";
 	    outfile<<"LOOKUP_TABLE default\n";
 	    for(int i=0;i<Num_Nodes;i++)
 	    	outfile<<meshphs.at(num).at(i)<<"\n";
     }
-
-        std::vector<double> normed_phs(getUni_Prop(WHICHPARA::PHSFRAC));
-        sprintf(varname,"PHSFRAC_NORMED");
-	    outfile<<"SCALARS "<<varname<<"  float  1\n";
-	    outfile<<"LOOKUP_TABLE default\n";
-	    for(int i=0;i<Num_Nodes;i++)
-	    	outfile<<normed_phs.at(i)<<"\n";
-    
-        std::vector<double> cust = getMeshProp(WHICHPARA::CUSTOM,0);
-        sprintf(varname,"CUSTOM");
-	    outfile<<"SCALARS "<<varname<<"  float  1\n";
-	    outfile<<"LOOKUP_TABLE default\n";
-	    for(int i=0;i<Num_Nodes;i++)
-	    	outfile<<cust.at(i)<<"\n";
-
-    meshphs.clear();
-    meshcon.clear();
-
     outfile.close();
-
 }
 
 #endif

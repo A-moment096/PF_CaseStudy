@@ -24,12 +24,12 @@ int main(){
     MeshNode node(PhaseNode (std::vector<PhaseEntry> (2,Def_PhsEnt)),Def_ConNode);
     SimulationMesh mesh({100,100,1},{0.5,0.5,1},node);
 
-    double Dvol = 0.040, Dvap = 0.002, Dsurf = 16.0, Dgb = 1.6, kappa_rho = 5.0, kappa_eta = 2.0, L = 10.0;
+    double Dvol = 0.040, Dvap = 0.002, Dsurf = 16.0, Dgb = 1.6,coefm = 5.0, coefk = 2.0, coefl = 5.0;
+
     int nstep = 5000, nprint = 50; double dtime = 1e-4;
-    double coefm = 5.0, coefk = 2.0, coefl = 5.0;
 
 // Initializer
-int simuflag = 1;
+int simuflag = 2;
     if(simuflag == 0){    
     double cent = mesh.MeshX/2;
     double rad1 = 20, rad2 = 10;
@@ -119,18 +119,19 @@ int simuflag = 1;
     }
 
 
-
 for (int istep = 0; istep <= nstep; ++istep)
 {
     mesh.Laplacian(WHICHPARA::CON);
     mesh.Laplacian(WHICHPARA::PHSFRAC);
 
     double A = 16.0, B = 1.0;
+    #pragma omp parallel for
     for(auto &node : mesh.SimuNodes){
         double c = node.Con_Node.getVal().at(0); // // // // // node.getVal().at(0)
         double dummy0 = dfdcon(c, node.sumPhsFrac3() ,node.sumPhsFrac2());
         node.Cust_Node.CustVal.at(0) = (dummy0 - 0.5*coefm* (node.getLap(WHICHPARA::CON,0)) );
 
+        #pragma omp parallel for
         for(int i = 0; i < node.getNum_Ent(WHICHPARA::PHSFRAC); ++i){
             double x = node.Phs_Node.getVal().at(i);
             
@@ -146,6 +147,7 @@ for (int istep = 0; istep <= nstep; ++istep)
 
     double Diffu = 0;
     
+    #pragma omp parallel for
     for(auto &node : mesh.SimuNodes){
         double sum = node.sumPhsFrac()*node.sumPhsFrac() - node.sumPhsFrac2();
         double c = node.Con_Node.getVal().at(0);
@@ -160,7 +162,11 @@ for (int istep = 0; istep <= nstep; ++istep)
     
     if(fmod(istep,nprint)==0)
         {   
-            mesh.outFile(istep);    
+            mesh.outFilehead(istep);
+            mesh.outAll(WHICHPARA::CON,istep);
+            mesh.outAll(WHICHPARA::PHSFRAC,istep);
+            mesh.outAve(WHICHPARA::PHSFRAC,istep);
+        
             cout<<"Done Step: "<<istep<<endl;
         }  
 }
