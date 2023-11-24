@@ -174,12 +174,8 @@ class SimulationMesh{
             else throw std::invalid_argument("Index Not in Mesh");
         }
 
-        void updateCustomValue(std::vector<double> CustomValue){
-            for(int i = 0; i < Num_Nodes; i++){
-                // SimuNodes.at(i).Custom_Value.reserve(CustomValue.size());
-                for(int num = 0; num < CustomValue.size(); num++)
-                SimuNodes.at(i).Custom_Value = CustomValue.at(i);
-            }
+        void updateCustValue(int _where,int _index, double _val){
+            SimuNodes.at(_where).Custom_Value.at(_index) = _val;
         }
 
         /*************************************************************/
@@ -222,7 +218,6 @@ class SimulationMesh{
 /*************************************************************/
         void showGlobalInfo(); // show the basic information of the mesh
         void showNodesProp(WHICHPARA which, int index); // show one of the properties of the SimuNodes.at(i)s inside the mesh
-        void write_vtk_grid_values(int istep);
         void outFile(int istep);
 
 /*************************************************************/

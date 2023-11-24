@@ -20,12 +20,13 @@ enum WHICHPARA {CON,PHSFRAC,CUSTOM=99};
 class MeshNode{
     public:
         
-        double Custom_Value = 0.0;
-        double CustLap = 0.0;
         double Temperature = 298.15;
 
         PhaseNode Phs_Node;
         ConNode Con_Node;
+        
+        std::vector<double> Custom_Value;
+        double CustLap = 0.0;
 
         MeshNode* Up = nullptr;
         MeshNode* Down = nullptr;
@@ -40,13 +41,13 @@ class MeshNode{
         MeshNode(){
             Phs_Node = Def_PhsNode;
             Con_Node = Def_ConNode;
-            // Custom_Value.reserve(10);
+            Custom_Value.reserve(10);
         }; //Accept Default Parameters
     
         MeshNode(PhaseNode _phs_node, ConNode _con_node){
             Phs_Node = _phs_node;
             Con_Node = _con_node;
-            // Custom_Value.reserve(10);
+            Custom_Value.reserve(10);
         }
 
         MeshNode(PhaseNode _phs_node):MeshNode(_phs_node, Def_ConNode){}
