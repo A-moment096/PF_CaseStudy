@@ -1,14 +1,16 @@
 #pragma once
-#ifndef MESH_NODE
-#define MESH_NODE
+#ifndef MESH_NODE_HH
+#define MESH_NODE_HH
 
 #include <iostream>
 #include <iomanip>
 #include <vector>
 
-#include "ConNode.hh"
-#include "PhaseNode.hh"
+// #include "ConNode.hh"
+// #include "PhaseNode.hh"
 #include "CustNode.hh"
+
+#include "BaseNode.hh"
 /***********************************************
 This is MeshNode Class, Every method is focused
 only on one node (or say, point) in simulation

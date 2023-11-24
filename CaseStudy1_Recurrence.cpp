@@ -14,7 +14,7 @@ int main()
     SimulationMesh Box(ConNode);
 
     for(auto& node : Box.SimuNodes){
-        node.Con_Node.updateEntry(0,0.4+0.01-double(rand()%200)/10000);
+        node.Con_Node.updateVal(0,0.4+0.01-double(rand()%200)/10000);
     }
     int nprint = 100;
     Box.outFile(1000);
@@ -32,7 +32,7 @@ int main()
             double cencon = node.getProp(WHICHPARA::CON).at(0);
             cencon+= 0.01*node.Cust_Node.CustLap.at(0);
             Box.threshold(cencon,0.0001,0.9999);
-            node.Con_Node.updateEntry(0,cencon);
+            node.Con_Node.updateVal(0,cencon);
         }
     
         if(istep == 200||istep ==100||istep == 0)

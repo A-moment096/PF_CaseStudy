@@ -1,6 +1,6 @@
 #pragma once
-#ifndef PHASE_SIMULATION_MESH
-#define PHASE_SIMULATION_MESH
+#ifndef SIMULATION_MESH_HH
+#define SIMULATION_MESH_HH
 
 #include <iostream>
 #include <vector>
@@ -125,7 +125,7 @@ class SimulationMesh{
         std::vector<double> getMeshProp(WHICHPARA whichpara, int Index){
             std::vector<double> result(Num_Nodes,0.0);
             #pragma parallel for
-            if(Index<getNum_Prop(whichpara))
+            if(getNum_Ent(whichpara) != 0 &&Index<getNum_Ent(whichpara))
             for(int i = 0; i < Num_Nodes;i++){
                 result.at(i) = ((*this)(i).getProp(whichpara).at(Index));
             }
@@ -172,7 +172,7 @@ class SimulationMesh{
             return 0;
         }
 
-        int getNum_Prop(WHICHPARA which){
+        int getNum_Ent(WHICHPARA which){
             return (*this)(0).getNum_Ent(which);
         }
         
@@ -184,7 +184,7 @@ class SimulationMesh{
 
         void updateNodeCon(int where, double _con){
             if((*this)(where).getNum_Ent(WHICHPARA::CON) == 1)
-            (*this)(where).Con_Node.updateEntry(0,_con);
+            (*this)(where).Con_Node.updateVal(0,_con);
             else throw std::invalid_argument("Exist more than one element");
         }
         
@@ -192,25 +192,15 @@ class SimulationMesh{
             updateNodeCon(transCoord(where) , _con);
         }
 
-        /*******/
-
-        void updateNodeCon(int where, ELEMENT _element, double _con){
-            (*this)(where).Con_Node.updateEntry(_element,_con);
-        } 
-
-        void updateNodeCon(std::vector<int> where, ELEMENT _element, double _con){
-            updateNodeCon(transCoord(where),_element,_con);
-        }
-
         /*************************************************************/
         void updateMeshPhs(int Index, std::vector<double> _val){
             for(int i = 0; i < Num_Nodes; i++){
-                (*this)(i).Phs_Node.updateEntry(Index,_val.at(i));
+                (*this)(i).Phs_Node.updateVal(Index,_val.at(i));
             }
         }
 
         void updateNodePhs(int where,int Index, double _phs){
-            (*this)(where).Phs_Node.updateEntry(Index,_phs);
+            (*this)(where).Phs_Node.updateVal(Index,_phs);
         }
 
         void updateNodePhs(std::vector<int> where, int Index, double _phs){
@@ -311,17 +301,17 @@ inline void SimulationMesh::outFile(int istep){
 	outfile<<"POINT_DATA "<<Num_Nodes<<"\n";
 
     char varname[64];
-    // int phs_num = getNum_Prop(WHICHPARA::PHSFRAC);
-    // int con_num = getNum_Prop(WHICHPARA::CON);
+    // int phs_num = getNum_Ent(WHICHPARA::PHSFRAC);
+    // int con_num = getNum_Ent(WHICHPARA::CON);
 
 
         std::vector<std::vector<double>> meshcon;
 
-    for(int num = 0; num < getNum_Prop(WHICHPARA::CON); num ++){
+    for(int num = 0; num < getNum_Ent(WHICHPARA::CON); num ++){
         meshcon.push_back(getMeshProp(WHICHPARA::CON,num));
     }
 
-	for(int num = 0; num < getNum_Prop(WHICHPARA::CON); num++){
+	for(int num = 0; num < getNum_Ent(WHICHPARA::CON); num++){
         sprintf(varname,"CON_%01d",num);
 	    outfile<<"SCALARS "<<varname<<"  float  1\n";
 	    outfile<<"LOOKUP_TABLE default\n";
@@ -332,13 +322,13 @@ inline void SimulationMesh::outFile(int istep){
 
     std::vector<std::vector<double>> meshphs;
 
-    meshphs.reserve(getNum_Prop(WHICHPARA::PHSFRAC));
-    for(int num = 0; num < getNum_Prop(WHICHPARA::PHSFRAC); num ++){
+    meshphs.reserve(getNum_Ent(WHICHPARA::PHSFRAC));
+    for(int num = 0; num < getNum_Ent(WHICHPARA::PHSFRAC); num ++){
         meshphs.push_back(getMeshProp(WHICHPARA::PHSFRAC,num));
     }
 
     // # parallel for
-    for(int num = 0; num < getNum_Prop(WHICHPARA::PHSFRAC); num++){
+    for(int num = 0; num < getNum_Ent(WHICHPARA::PHSFRAC); num++){
         sprintf(varname,"PHSFRAC_%01d",num);
 	    outfile<<"SCALARS "<<varname<<"  float  1\n";
 	    outfile<<"LOOKUP_TABLE default\n";

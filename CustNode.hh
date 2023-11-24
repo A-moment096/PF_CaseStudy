@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef CUST_NODE
-#define CUST_NODE
+#ifndef CUST_NODE_HH
+#define CUST_NODE_HH
 
 #include <iostream>
 #include <iomanip>
@@ -18,10 +18,7 @@ public:
     CustNode():CustNode(1){}
 
     CustNode(int _num){
-        Num = _num;
-        CustVal.reserve(Num);
-        CustLap.reserve(Num);
-        CustGrad.reserve(Num);
+        addEntry(_num);
     }
 
     ~CustNode(){
@@ -34,11 +31,13 @@ public:
         CustLap.at(_Index) = _val;
     }
 
-    void addEntry(int num){
-        Num += num;
-        CustVal.reserve(Num);
-        CustLap.reserve(Num);
-        CustGrad.reserve(Num);
+    void addEntry(int _num){
+        Num += _num;
+        for(int i = 0; i < _num; ++i){
+            CustVal.push_back(0.0);
+            CustLap.push_back(0.0);
+            CustGrad.push_back(0.0);
+        }
     }
 
     std::vector<double> getVal(){

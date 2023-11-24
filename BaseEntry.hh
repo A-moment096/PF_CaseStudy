@@ -1,9 +1,8 @@
 #pragma once
-#ifndef CON_ENTRY
-#define CON_ENTRY
+#ifndef BASE_ENTRY
+#define BASE_ENTRY
 
 #include <iostream>
-#include <string>
 #include <vector>
 
 enum class ELEMENT:int{
@@ -40,57 +39,61 @@ const std::vector<std::string> element_list = {
     return out<<element_list[(int)_element];
 }
 
-class ConEntry{
+class BaseEntry{
     public:
-        double Concentration = 0;
-        ELEMENT Element;
-        int Index = 0;
+        double Val = 0;
         double Lap = 0;
         double Grad = 0;
-    
+        unsigned Index;
+        
 /*************************************************************/
-     
-        ConEntry(){
-            Element = ELEMENT::VA;
-            Index = 0;
-        }
 
-        ConEntry(ELEMENT _element){
-            Element = _element;
-        }
+        BaseEntry():Index(0){}
 
-        ConEntry(ELEMENT _element, double _con):ConEntry(_element){
-            Concentration = _con;
-        }
+        BaseEntry(double _val):Index(0),Val(_val){}
 
-        ConEntry(const ConEntry& _Entry){
-            Concentration = _Entry.Concentration;
-            Element = _Entry.Element;
+        BaseEntry(const BaseEntry& _Entry){
+            Val = _Entry.Val;
             Index = _Entry.Index;
             Lap = _Entry.Lap;
             Grad = _Entry.Grad;
         }
 
-        ConEntry& operator= (const ConEntry& _Entry){
-            Concentration = _Entry.Concentration;
-            Element = _Entry.Element;
+        BaseEntry& operator= (const BaseEntry& _Entry){
+            Val = _Entry.Val;
             Index = _Entry.Index;
             Lap = _Entry.Lap;
             Grad = _Entry.Grad;
             return *this;
         }
 
-        ~ConEntry(){
+        ~BaseEntry(){
         }
 
-/**/    bool operator== (const ConEntry& _Entry){
+        
+/**/    bool operator== (const BaseEntry& _Entry){
             bool result;
-            ((Concentration == _Entry.Concentration)&&(Element == _Entry.Element)) ? (result = true) : (result = false);
+            ((Val == _Entry.Val)&&(Index == _Entry.Index)) ? (result = true) : (result = false);
             return result;
         }
 
 /*************************************************************/
 
+
+};
+
+class ConEntry : public BaseEntry{
+    public:
+        ELEMENT Element;
+        using BaseEntry::BaseEntry;
+    
 }Def_ConEnt;
+
+class PhaseEntry : public BaseEntry{
+    public:
+        using BaseEntry::BaseEntry;
+    
+}Def_PhsEnt;
+
 
 #endif

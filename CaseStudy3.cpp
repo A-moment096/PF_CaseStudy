@@ -8,6 +8,16 @@ double phi(double c){
     return c*c*c*(10-15*c+6*c*c);
 }
 
+double dfdcon(double c, double sum3, double sum2){
+    double && A = 16.0, && B = 1.0;
+    return B*(2*c+4*sum3 - 6*sum2)- 2*A*c*(3*c-2*c*c-1);
+}
+
+double dfdeta(double c, double x, double sum2){
+    double && B = 1.0;
+    return 12*B*x*(-2*x+c*x+1-c+sum2);
+}
+
 int main(){
     auto start =  std::chrono::high_resolution_clock:: now();
 
@@ -19,7 +29,7 @@ int main(){
     double coefm = 5.0, coefk = 2.0, coefl = 5.0;
 
 // Initializer
-int simuflag = 0;
+int simuflag = 1;
     if(simuflag == 0){    
     double cent = mesh.MeshX/2;
     double rad1 = 20, rad2 = 10;
@@ -89,7 +99,7 @@ int simuflag = 0;
         double rad1 = 10.0;
         double rad2 = 5.0;
         #pragma omp parallel for collapse(2)
-            for(int coord = 0; coord < mesh.getNum_Prop(WHICHPARA::PHSFRAC); ++coord)
+            for(int coord = 0; coord < mesh.getNum_Ent(WHICHPARA::PHSFRAC); ++coord)
                 for(int i = 0; i < mesh.MeshX; ++i)
                     for(int j = 0; j < mesh.MeshY; ++j){
                         double dis = (i-particleCoord.at(2*coord))*(i-particleCoord.at(2*coord))+(j-particleCoord.at(2*coord+1))*(j-particleCoord.at(2*coord+1));
@@ -108,28 +118,27 @@ int simuflag = 0;
                     }
     }
 
-    mesh.outFile(0);    
 
-for (int istep = 0; istep < nstep; ++istep)
+
+for (int istep = 0; istep <= nstep; ++istep)
 {
     mesh.Laplacian(WHICHPARA::CON);
     mesh.Laplacian(WHICHPARA::PHSFRAC);
 
     double A = 16.0, B = 1.0;
     for(auto &node : mesh.SimuNodes){
-        double dfdcon, c = node.Con_Node.getVal().at(0); // // // // // node.getVal().at(0)
-        dfdcon = B*(2*c+4*node.sumPhsFrac3() - 6*node.sumPhsFrac2())- 2*A*(3*c*c*-2*c*c*c-c);
-        node.Cust_Node.CustVal.at(0) = (dfdcon - 0.5*coefm* (node.getLap(WHICHPARA::CON,0)) );
-    }
+        double c = node.Con_Node.getVal().at(0); // // // // // node.getVal().at(0)
+        double dummy0 = dfdcon(c, node.sumPhsFrac3() ,node.sumPhsFrac2());
+        node.Cust_Node.CustVal.at(0) = (dummy0 - 0.5*coefm* (node.getLap(WHICHPARA::CON,0)) );
 
-    for(auto &node: mesh.SimuNodes){
-        double dfdeta, c = node.Con_Node.getVal().at(0);
         for(int i = 0; i < node.getNum_Ent(WHICHPARA::PHSFRAC); ++i){
             double x = node.Phs_Node.getVal().at(i);
-            dfdeta = 12*B*(x*(-2*x+c*x+1-c+node.sumPhsFrac2()));
-            double dummy = x-dtime*coefl*(dfdeta-0.5*coefk*node.Phs_Node.getLap(i));
-            mesh.threshold(dummy,0.0001,0.9999);
-            node.Phs_Node.updateVal(i,dummy);
+            
+            double dummy1 = dfdeta(c,x, node.sumPhsFrac2());
+            double dummy2 = x-dtime*coefl*(dummy1-0.5*coefk*node.Phs_Node.getLap(i));
+
+            mesh.threshold(dummy2,0.0001,0.9999);
+            node.Phs_Node.updateVal(i,dummy2);
         }
     }
 
@@ -155,8 +164,6 @@ for (int istep = 0; istep < nstep; ++istep)
             cout<<"Done Step: "<<istep<<endl;
         }  
 }
-
-
 
     auto stop =  std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds> (stop-start);

@@ -1,61 +1,55 @@
 #pragma once
-#ifndef CON_NODE
-#define CON_NODE
+#ifndef NODE_TEMP_HH
+#define NODE_TEMP_HH
 
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <algorithm>
 
-#include "ConEntry.hh"
+#include "BaseEntry.hh"
 
-class ConNode{
+template <class EntryT>
+class BaseNode{
+    private:
+        EntryT Def_Ent;
     public:
         unsigned Num_Ent;
-        std::vector<ConEntry> Entrys;
+        std::vector<EntryT> Entrys;
 
 /*************************************************************/
 
 // Construct & Deconstruct Functions
-        ConNode(){
-            Entrys.push_back(Def_ConEnt);
+        BaseNode(){
+            Entrys.push_back(Def_Ent);
             Num_Ent = 1;
             (*this)(0).Index  = 0;
         } //Accept Default Parameters
         
-        ConNode(std::vector<ConEntry> EntryList){
+        BaseNode(std::vector<EntryT> EntryList){
             Entrys = EntryList;
             Num_Ent = EntryList.size();
             updateIndex();
         }
 
-        ConNode(std::vector<ELEMENT> ElementList){
-            Num_Ent = ElementList.size();
-            for (unsigned i = 0; i < Num_Ent; i++){
-                Entrys.push_back(Def_ConEnt);
-                (*this)(i).Element = (ElementList.at(i));
-                (*this)(i).Index  = i;
-            }
-        }
-
-        ConNode(const ConNode& _node){
+        BaseNode(const BaseNode& _node){
             Num_Ent = _node.Num_Ent;
             Entrys = _node.Entrys;
         }
 
-        ConNode& operator= (const ConNode& _node){
+        BaseNode& operator= (const BaseNode& _node){
             Num_Ent = _node.Num_Ent;
             Entrys = _node.Entrys;
             return *this;
         }
                 
-        ConEntry& operator() (const unsigned _Index){
+        EntryT& operator() (const unsigned _Index){
             if(_Index<Num_Ent)
             return Entrys.at(_Index);
             else throw std::out_of_range("No such entry");
         }
 
-        ~ConNode(){
+        ~BaseNode(){
             Entrys.clear();
         }
 
@@ -64,7 +58,7 @@ class ConNode{
         std::vector<double> getVal(){
             std::vector<double> result;
             for(auto ent : Entrys){
-                result.push_back(ent.Concentration);
+                result.push_back(ent.Val);
             }
             return result;
         }
@@ -87,7 +81,7 @@ class ConNode{
 
         double getVal(unsigned _Index){
             if(_Index < Num_Ent)
-            return (*this)(_Index).Concentration;
+            return (*this)(_Index).Val;
             else throw std::out_of_range("No Such Index");
         }
 
@@ -108,23 +102,10 @@ class ConNode{
         void addEntry(unsigned num){
             for (unsigned i = 0; i < num; ++i)
             {
-                Entrys.push_back(Def_ConEnt);
+                Entrys.push_back(Def_Ent);
             }
             Num_Ent = Entrys.size();
             updateIndex();
-        }
-
-        void deletEntry(ELEMENT delElemnt){
-            if(Num_Ent <= 1) throw std::out_of_range("Last entry");
-            else
-                for(auto &ent : Entrys){
-                    if(ent.Element == delElemnt){
-                        std::vector<ConEntry>::iterator delPos = std::find(Entrys.begin(),Entrys.end(),ent);
-                        Entrys.erase(delPos);
-                        return;
-                    }
-                }
-            throw std::invalid_argument("No such element");
         }
 
         void deletEntry(unsigned _Index){
@@ -132,7 +113,7 @@ class ConNode{
             else
                 for(auto &ent : Entrys){
                     if(ent.Index == _Index){
-                        std::vector<ConEntry>::iterator delPos = std::find(Entrys.begin(),Entrys.end(),ent);
+                        std::iterator delPos = std::find(Entrys.begin(),Entrys.end(),ent);
                         Entrys.erase(delPos);
                         return;
                     }
@@ -140,20 +121,10 @@ class ConNode{
             throw std::out_of_range("Not in entry list");
         }
 
-        void updateVal(ELEMENT _elemnt,double _con){
-            for(auto &ent : Entrys){
-                if(ent.Element == _elemnt){
-                    ent.Concentration = _con;
-                    return;
-                }
-            }
-            throw std::invalid_argument("No such element");
-        }
-
         void updateVal(unsigned _Index,double _con){
             for(auto &ent : Entrys){
                 if(ent.Index == _Index){
-                    ent.Concentration = _con;
+                    ent.Val = _con;
                     return;
                 }
             }
@@ -187,6 +158,40 @@ class ConNode{
                 (*this)(i).Index = i;
             }
         }
+    
+};
+
+class ConNode : public BaseNode<ConEntry>{
+    public:
+        using BaseNode<ConEntry>::BaseNode;
 }Def_ConNode;
+
+class PhaseNode : public BaseNode<PhaseEntry>{
+    public:
+        using BaseNode<PhaseEntry>::BaseNode;
+        void updateIndex(){
+            for(unsigned i = 0; i < Num_Ent; i++){
+                (*this)(i).Index = (i);
+            }
+        }
+
+        double sumPhsFrac(){
+            double result = 0;
+            for(auto ent : Entrys)result += ent.Val;
+            return result;  
+        }
+
+        double sumPhsFrac2(){
+            double result = 0;
+            for(auto ent : Entrys)result += ent.Val*ent.Val;
+            return result;
+        }
+
+        double sumPhsFrac3(){
+            double result = 0;
+            for(auto ent : Entrys)result += ent.Val*ent.Val*ent.Val;
+            return result;
+        }
+}Def_PhsNode;
 
 #endif
