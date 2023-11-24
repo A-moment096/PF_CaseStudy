@@ -118,7 +118,8 @@ mesh.outFile(0);
 
 for (int istep = 0; istep < nstep; ++istep)
 {
-    mesh.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CON);
+    mesh.Laplacian(WHICHPARA::CON);
+    mesh.Laplacian(WHICHPARA::PHSFRAC);
 
     {double A = 16.0, B = 1.0;
     for(auto &node : mesh.SimuNodes){
@@ -126,7 +127,15 @@ for (int istep = 0; istep < nstep; ++istep)
         dfdcon = B*(2*c+4*node.sumPhsFrac3() - 6*node.sumPhsFrac2())- 2*A*(3*c*c*-2*c*c*c-c);
         node.Custom_Value = (dfdcon - 0.5*coefm* (node.getLap(WHICHPARA::CON).at(0)) );
     }}
-    mesh.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CUSTOM);
+
+    {double A = 16.0, B = 1.0;
+    for(auto &node : mesh.SimuNodes){
+        double dfdeta, c = node.Con_Node.getCon().at(0);
+        double x = node.Phs_Node.getPhsFrac().at(0);
+        dfdeta = 12*B*(x*(-2*x+c*x+1-c+node.sumPhsFrac2()));
+        node.Custom_Value = (dfdeta - 0.5*coefm* (node.getLap(WHICHPARA::CON).at(0)) );
+    }}
+    mesh.Laplacian(WHICHPARA::CUSTOM);
 
     double Diffu = 0;
     int identfier = 0;
