@@ -8,6 +8,7 @@
 
 #include "ConNode.hh"
 #include "PhaseNode.hh"
+#include "CustNode.hh"
 /***********************************************
 This is MeshNode Class, Every method is focused
 only on one node (or say, point) in simulation
@@ -24,9 +25,7 @@ class MeshNode{
 
         PhaseNode Phs_Node;
         ConNode Con_Node;
-        
-        std::vector<double> Custom_Value;
-        double CustLap = 0.0;
+        CustNode Cust_Node;
 
         MeshNode* Up = nullptr;
         MeshNode* Down = nullptr;
@@ -41,13 +40,13 @@ class MeshNode{
         MeshNode(){
             Phs_Node = Def_PhsNode;
             Con_Node = Def_ConNode;
-            Custom_Value.reserve(10);
+            Cust_Node = Def_CustNode;
         }; //Accept Default Parameters
     
         MeshNode(PhaseNode _phs_node, ConNode _con_node){
             Phs_Node = _phs_node;
             Con_Node = _con_node;
-            Custom_Value.reserve(10);
+            Cust_Node = Def_CustNode;
         }
 
         MeshNode(PhaseNode _phs_node):MeshNode(_phs_node, Def_ConNode){}
@@ -67,6 +66,28 @@ class MeshNode{
         /*************************************************************/
         // Manipulate Methods
 
+        void addEnt(WHICHPARA whichpara,int _num){
+            switch (whichpara)
+            {
+            case WHICHPARA::CON :
+                Con_Node.addEntry(_num);
+                return;
+                break;
+            case WHICHPARA::PHSFRAC :
+                Phs_Node.addEntry(_num);
+                return;
+                break;
+            case WHICHPARA::CUSTOM :
+                Cust_Node.addEntry(_num);
+                return;
+                break;
+            default:
+                throw std::invalid_argument("No such element");
+                return;
+                break;
+            }
+        }
+
         unsigned getNum_Ent(WHICHPARA whichpara){
             switch (whichpara)
             {
@@ -77,7 +98,7 @@ class MeshNode{
                 return Phs_Node.Num_Ent;
                 break;
             case WHICHPARA::CUSTOM :
-                return 1;
+                return Cust_Node.Num;
                 break;
             default:
                 throw std::invalid_argument("No such element");
@@ -90,13 +111,13 @@ class MeshNode{
             switch (whichpara)
             {
             case WHICHPARA::CON :
-                return Con_Node.getCon();
+                return Con_Node.getVal();
                 break;
             case WHICHPARA::PHSFRAC :
-                return Phs_Node.getPhsFrac();
+                return Phs_Node.getVal();
                 break;
             case WHICHPARA::CUSTOM :
-                return {Custom_Value};
+                return Cust_Node.getVal();
                 break;
             default:
                 break;
@@ -104,14 +125,17 @@ class MeshNode{
             return {};
         }
 
-        std::vector<double> getLap(unsigned whichpara){
+        double getLap(unsigned whichpara, int _index){
             switch (whichpara)
             {
             case WHICHPARA::CON :
-                return Con_Node.getLap();
+                return Con_Node.getLap(_index);
                 break;
             case WHICHPARA::PHSFRAC :
-                return Phs_Node.getLap();
+                return Phs_Node.getLap(_index);
+                break;
+            case WHICHPARA::CUSTOM :
+                return Cust_Node.getLap(_index);
                 break;
             default:
                 break;
@@ -119,15 +143,19 @@ class MeshNode{
             return {};
         }
 
-         std::vector<double> getGrad(unsigned whichpara){
+        double getGrad(unsigned whichpara, int _index){
             switch (whichpara)
             {
             case WHICHPARA::CON :
-                return Con_Node.getGrad();
+                return Con_Node.getGrad(_index);
                 break;
             case WHICHPARA::PHSFRAC :
-                return Phs_Node.getGrad();
+                return Phs_Node.getGrad(_index);
                 break;
+            case WHICHPARA::CUSTOM :
+                return Cust_Node.getGrad(_index);
+                break;
+            
             default:
                 break;
             }
@@ -148,7 +176,6 @@ class MeshNode{
             return Phs_Node.sumPhsFrac3();
         }
         
-
         /*************************************************************/
 
         void showNode();
@@ -161,8 +188,8 @@ void MeshNode::showNode(){
     std::cout<<"Phase Index:\tPhase Fraction:\t\tElement:\tConcentration:\n";
     for(int i = 0; i < Phs_Node.Num_Ent; i++){
         for(int j = 0; j < Con_Node.Num_Ent; j++){
-            std::cout<<Phs_Node.Entrys.at(i).index<<"\t\t"<<std::fixed<<std::setprecision(6)<<Phs_Node.getPhsFrac().at(i)<<"\t\t";
-            std::cout<<Con_Node.Entrys.at(j).Element<<"\t\t"<<std::fixed<<std::setprecision(6)<<Con_Node.getCon().at(j)<<"\n";
+            std::cout<<Phs_Node.Entrys.at(i).index<<"\t\t"<<std::fixed<<std::setprecision(6)<<Phs_Node.getVal().at(i)<<"\t\t";
+            std::cout<<Con_Node.Entrys.at(j).Element<<"\t\t"<<std::fixed<<std::setprecision(6)<<Con_Node.getVal().at(j)<<"\n";
         }
         std::cout<<"\n";
     }

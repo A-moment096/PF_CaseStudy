@@ -11,8 +11,8 @@ int main(){
     SimulationMesh mesh({10,10,1},{0.5,0.5,1},node);
 
     srand(11111);
-    for(int i = 0; i<mesh.Num_Nodes; i++){
-        mesh.findNode(i).Con_Node.updateEntry(0,0.4+0.01-double(rand()%200)/10000);
+    for(auto &node : mesh.SimuNodes){
+        node.Con_Node.updateEntry(0,0.4+0.01-double(rand()%200)/10000);
     }
 
     mesh.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CON);

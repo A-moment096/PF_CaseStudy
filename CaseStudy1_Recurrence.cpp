@@ -23,14 +23,14 @@ int main()
         for(auto& node : Box.SimuNodes){
             double custom = node.Con_Node.getLap().at(0);
             double cencon = node.getProp(WHICHPARA::CON).at(0);
-            node.Custom_Value = (dfdcon(cencon)-0.5*custom);
+            node.Cust_Node.CustVal.at(0) = (dfdcon(cencon)-0.5*custom);
         }
 
         Box.Laplacian(STENCILE::FIVEPOINT,WHICHPARA::CUSTOM);
         
         for(auto& node : Box.SimuNodes){
             double cencon = node.getProp(WHICHPARA::CON).at(0);
-            cencon+= 0.01*node.CustLap;
+            cencon+= 0.01*node.Cust_Node.CustLap.at(0);
             Box.threshold(cencon,0.0001,0.9999);
             node.Con_Node.updateEntry(0,cencon);
         }

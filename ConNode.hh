@@ -55,7 +55,7 @@ class ConNode{
 
         /*************************************************************/
 
-        std::vector<double> getCon(){
+        std::vector<double> getVal(){
             std::vector<double> result;
             for(auto ent : Entrys){
                 result.push_back(ent.Concentration);
@@ -77,6 +77,18 @@ class ConNode{
                 result.push_back(ent.Grad);
             }
             return result;
+        }
+
+        double getVal(int _index){
+            return Entrys.at(_index).Concentration;
+        }
+
+        double getLap(int _index){
+            return Entrys.at(_index).Lap;
+        }
+
+        double getGrad(int _index){
+            return Entrys.at(_index).Grad;
         }
 
         /*************************************************************/

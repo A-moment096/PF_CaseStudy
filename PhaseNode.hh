@@ -46,7 +46,7 @@ class PhaseNode{
 
         /*************************************************************/
 
-        std::vector<double> getPhsFrac(){
+        std::vector<double> getVal(){
             std::vector<double> result;
             for(auto ent : Entrys){
                 result.push_back(ent.PhaseFrac);
@@ -69,6 +69,19 @@ class PhaseNode{
             }
             return result;
         }
+
+        double getVal(int _index){
+            return Entrys.at(_index).PhaseFrac;
+        }
+
+        double getLap(int _index){
+            return Entrys.at(_index).Lap;
+        }
+
+        double getGrad(int _index){
+            return Entrys.at(_index).Grad;
+        }
+
 
         /*****************************************************************/
 

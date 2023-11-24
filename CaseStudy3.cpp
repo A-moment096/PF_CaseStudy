@@ -117,17 +117,17 @@ for (int istep = 0; istep < nstep; ++istep)
 
     double A = 16.0, B = 1.0;
     for(auto &node : mesh.SimuNodes){
-        double dfdcon, c = node.Con_Node.getCon().at(0); // // // // // node.getCon().at(0)
+        double dfdcon, c = node.Con_Node.getVal().at(0); // // // // // node.getVal().at(0)
         dfdcon = B*(2*c+4*node.sumPhsFrac3() - 6*node.sumPhsFrac2())- 2*A*(3*c*c*-2*c*c*c-c);
-        node.Custom_Value.at(0) = (dfdcon - 0.5*coefm* (node.getLap(WHICHPARA::CON).at(0)) );
+        node.Cust_Node.CustVal.at(0) = (dfdcon - 0.5*coefm* (node.getLap(WHICHPARA::CON,0)) );
     }
 
     for(auto &node: mesh.SimuNodes){
-        double dfdeta, c = node.Con_Node.getCon().at(0);
+        double dfdeta, c = node.Con_Node.getVal().at(0);
         for(int i = 0; i < node.getNum_Ent(WHICHPARA::PHSFRAC); ++i){
-            double x = node.Phs_Node.getPhsFrac().at(i);
+            double x = node.Phs_Node.getVal().at(i);
             dfdeta = 12*B*(x*(-2*x+c*x+1-c+node.sumPhsFrac2()));
-            double dummy = x-dtime*coefl*(dfdeta-0.5*coefk*node.Phs_Node.getLap().at(i));
+            double dummy = x-dtime*coefl*(dfdeta-0.5*coefk*node.Phs_Node.getLap(i));
             mesh.threshold(dummy,0.0001,0.9999);
             node.Phs_Node.updateEntry(i,dummy);
         }
@@ -139,10 +139,10 @@ for (int istep = 0; istep < nstep; ++istep)
     
     for(auto &node : mesh.SimuNodes){
         double sum = node.sumPhsFrac()*node.sumPhsFrac() - node.sumPhsFrac2();
-        double c = node.Con_Node.getCon().at(0);
+        double c = node.Con_Node.getVal().at(0);
         Diffu = Dvol*(phi(c))+Dvap*(1-phi(c))+Dsurf*c*(1-c)+Dgb*sum;
 
-        double dumy = c + dtime*Diffu*node.CustLap;
+        double dumy = c + dtime*Diffu*node.getLap(WHICHPARA::CUSTOM,0);
         
         mesh.threshold(dumy,0.0001,0.9999);
 
