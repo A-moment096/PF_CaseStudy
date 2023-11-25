@@ -60,6 +60,7 @@
         "complex": "cpp",
         "cstring": "cpp",
         "map": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "filesystem": "cpp"
     }
 }

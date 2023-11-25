@@ -41,58 +41,58 @@ const std::vector<std::string> element_list = {
 
 class BaseEntry{
     public:
-        double Val = 0;
-        double Lap = 0;
-        double Grad = 0;
-        unsigned Index;
-        
-/*************************************************************/
+    int Index = 0;
+    double Val = 0;
+    double Lap = 0;
+    double Grad = 0;
 
-        BaseEntry():Index(0){}
+    /*************************************************************/
 
-        BaseEntry(double _val):Index(0),Val(_val){}
+    BaseEntry():Index(0){}
 
-        BaseEntry(const BaseEntry& _Entry){
-            Val = _Entry.Val;
-            Index = _Entry.Index;
-            Lap = _Entry.Lap;
-            Grad = _Entry.Grad;
-        }
+    BaseEntry(double _val):Index(0), Val(_val){}
 
-        BaseEntry& operator= (const BaseEntry& _Entry){
-            Val = _Entry.Val;
-            Index = _Entry.Index;
-            Lap = _Entry.Lap;
-            Grad = _Entry.Grad;
-            return *this;
-        }
+    BaseEntry(const BaseEntry &_Entry){
+        Val = _Entry.Val;
+        Index = _Entry.Index;
+        Lap = _Entry.Lap;
+        Grad = _Entry.Grad;
+    }
 
-        ~BaseEntry(){
-        }
+    BaseEntry &operator= (const BaseEntry &_Entry){
+        Val = _Entry.Val;
+        Index = _Entry.Index;
+        Lap = _Entry.Lap;
+        Grad = _Entry.Grad;
+        return *this;
+    }
 
-        
-/**/    bool operator== (const BaseEntry& _Entry){
-            bool result;
-            ((Val == _Entry.Val)&&(Index == _Entry.Index)) ? (result = true) : (result = false);
-            return result;
-        }
+    ~BaseEntry(){
+    }
 
-/*************************************************************/
+
+    /**/    bool operator== (const BaseEntry &_Entry){
+        bool result;
+        ((Val == _Entry.Val)&&(Index == _Entry.Index)) ? (result = true) : (result = false);
+        return result;
+    }
+
+    /*************************************************************/
 
 
 };
 
 class ConEntry : public BaseEntry{
     public:
-        ELEMENT Element;
-        using BaseEntry::BaseEntry;
-    
+    ELEMENT Element;
+    using BaseEntry::BaseEntry;
+
 }Def_ConEnt;
 
 class PhaseEntry : public BaseEntry{
     public:
-        using BaseEntry::BaseEntry;
-    
+    using BaseEntry::BaseEntry;
+
 }Def_PhsEnt;
 
 

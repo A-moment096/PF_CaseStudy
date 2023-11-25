@@ -7,9 +7,8 @@
 #include <iomanip>
 #include <vector>
 
-class CustNode
-{
-public:
+class CustNode{
+    public:
     std::vector<double> CustVal;
     std::vector<double> CustLap;
     std::vector<double> CustGrad;
@@ -33,7 +32,7 @@ public:
 
     void addEntry(int _num){
         Num += _num;
-        for(int i = 0; i < _num; ++i){
+        for (int i = 0; i<_num; ++i){
             CustVal.push_back(0.0);
             CustLap.push_back(0.0);
             CustGrad.push_back(0.0);
