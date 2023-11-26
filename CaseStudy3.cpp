@@ -9,26 +9,26 @@ double phi(double c){
 }
 
 double dfdcon(double c, double sum3, double sum2){
-    double &&A = 16.0, &&B = 1.0;
+    const double &&A = 16.0, &&B = 1.0;
     return B*(2*c+4*sum3-6*sum2)-2*A*c*(3*c-2*c*c-1);
 }
 
 double dfdeta(double c, double x, double sum2){
-    double &&B = 1.0;
+    const double &&B = 1.0;
     return 12*B*x*(-2*x+c*x+1-c+sum2);
 }
 
 int main(){
     auto start = std::chrono::high_resolution_clock::now();
 
-    std::string _path("PoreShrink");
+    std::string _path(toVTK_Path("PoreShrink"));
 
     MeshNode node(PhaseNode(std::vector<PhaseEntry>(2, Def_PhsEnt)), Def_ConNode);
     SimulationMesh mesh({ 100, 100, 1 }, { 0.5, 0.5, 1 }, node);
 
-    double Dvol = 0.040, Dvap = 0.002, Dsurf = 16.0, Dgb = 1.6, coefm = 5.0, coefk = 2.0, coefl = 5.0;
+    const double &&Dvol = 0.040, &&Dvap = 0.002, &&Dsurf = 16.0, &&Dgb = 8, &&coefm = 5.0, &&coefk = 2.0, &&coefl = 5.0;
 
-    int nstep = 5000, nprint = 50; double dtime = 1e-4;
+    const int &&nstep = 5000, &&nprint = 50; double &&dtime = 1e-4;
 
     // Initializer
     int simuflag = 1;
@@ -126,15 +126,15 @@ int main(){
     #pragma omp parallel for
         for (auto &node:mesh.SimuNodes){
             double c = node.Con_Node.getVal().at(0); // node.getVal().at(0)
-            double dummy0 = dfdcon(c, node.sumPhsFrac3(), node.sumPhsFrac2());
+            double && dummy0 = std::move( dfdcon(c, node.sumPhsFrac3(), node.sumPhsFrac2()));
             node.Cust_Node.CustVal.at(0) = (dummy0-0.5*coefm*(node.getLap(WHICHPARA::CON, 0)));
 
         #pragma omp parallel for
             for (int i = 0; i<node.getNum_Ent(WHICHPARA::PHSFRAC); ++i){
                 double x = node.Phs_Node.getVal().at(i);
 
-                double dummy1 = dfdeta(c, x, node.sumPhsFrac2());
-                double dummy2 = x-dtime*coefl*(dummy1-0.5*coefk*node.Phs_Node.getLap(i));
+                double && dummy1 = std::move(dfdeta(c, x, node.sumPhsFrac2()));
+                double && dummy2 = std::move(x-dtime*coefl*(dummy1-0.5*coefk*node.Phs_Node.getLap(i)));
 
                 mesh.threshold(dummy2, 0.0001, 0.9999);
                 node.Phs_Node.updateVal(i, dummy2);
@@ -151,7 +151,7 @@ int main(){
             double c = node.Con_Node.getVal().at(0);
             Diffu = Dvol*(phi(c))+Dvap*(1-phi(c))+Dsurf*c*(1-c)+Dgb*sum;
 
-            double dumy = c+dtime*Diffu*node.getLap(WHICHPARA::CUSTOM, 0);
+            double &&dumy = std::move(c+dtime*Diffu*node.getLap(WHICHPARA::CUSTOM, 0));
 
             mesh.threshold(dumy, 0.0001, 0.9999);
 
@@ -159,18 +159,12 @@ int main(){
         }
 
         if (fmod(istep, nprint)==0){
-            mesh.outFilehead(_path, istep);
-            mesh.outAll(_path,WHICHPARA::CON, istep);
-            mesh.outAve(_path,WHICHPARA::PHSFRAC, istep);
-
+            mesh.outVTK(_path, istep);
             cout<<"Done Step: "<<istep<<endl;
         }
     }
 
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast< std::chrono::microseconds > (stop-start);
-    cout<<"\nTime taken by programme: "<<( double )duration.count()/1e6<<" seconds"<<endl;
-
+    RunTimeCounter(start);
     return 0;
 }
 

@@ -10,9 +10,9 @@
 #include <cstring>
 #include "MeshNode.hh"
 
-enum WHICHDIM{ X, Y, Z };
-enum BOUNDCOND{ PERIODIC, CONST, ADIABATIC };
-enum STENCILE{ FIVEPOINT = 5, NINEPOINT = 9 };
+enum DIM{ DimX, DimY, DimZ };
+enum BOUNDCOND{ BndPERIODIC, BndCONST, BndADIABATIC };
+enum STENCILE{ StencFIVE = 5, StencNINE = 9 };
 
 
 class SimulationMesh{
@@ -34,18 +34,18 @@ class SimulationMesh{
 
     /*************************************************************/
 
-    SimulationMesh(){} // initial with default size, without (*this)(i)s
+    SimulationMesh(){} // initial with default size, without SimuNodes.at(i)s
 
-    SimulationMesh(std::vector<int> SizeInfo, std::vector<double> StepInfo, MeshNode Node){ // initial with size and (*this)(i)s
+    SimulationMesh(std::vector<int> SizeInfo, std::vector<double> StepInfo, MeshNode Node){ // initial with size and SimuNodes.at(i)s
         Dimension = SizeInfo;
         StepLength = StepInfo;
         fillNodes(Node);
         Num_Nodes = SimuNodes.size();
-        bindBoundary(BOUNDCOND::PERIODIC);
+        bindBoundary(BOUNDCOND::BndPERIODIC);
     }
 
     SimulationMesh(std::vector<double> StepInfo, MeshNode Node):SimulationMesh({ 64, 64, 1 }, StepInfo, Node){}
-    SimulationMesh(MeshNode Node):SimulationMesh({ 1, 1, 1 }, Node){} // initial with (*this)(i)s and default size
+    SimulationMesh(MeshNode Node):SimulationMesh({ 1, 1, 1 }, Node){} // initial with SimuNodes.at(i)s and default size
 
     ~SimulationMesh(){
         Dimension.clear();
@@ -83,7 +83,7 @@ class SimulationMesh{
 
     /*************************************************************/
 
-    void fillNodes(MeshNode Nodes){ // fill mesh with (*this)(i)s 
+    void fillNodes(MeshNode Nodes){ // fill mesh with SimuNodes.at(i)s 
         SimuNodes.reserve(MeshX*MeshY*MeshZ);
         for (int i = 0; i < MeshX*MeshY*MeshZ; i++){
             SimuNodes.push_back(Nodes);
@@ -92,34 +92,68 @@ class SimulationMesh{
 
     void bindBoundary(BOUNDCOND whichBOUNDCOND){
         for (int i = 0; i < Num_Nodes; i++){
-            (*this)(i).Forward = (i-MeshY < 0 ? &((*this)(i)) : &((*this)(i-MeshY)));
-            (*this)(i).Backward = (i+MeshY >= Num_Nodes ? &((*this)(i)) : &((*this)(i+MeshY)));
-            (*this)(i).Left = (i-1 < 0 ? &((*this)(i)) : &((*this)(i-1)));
-            (*this)(i).Right = (i+1 >= Num_Nodes ? &((*this)(i)) : &((*this)(i+1)));
-            (*this)(i).Down = (i-MeshX*MeshY < 0 ? &((*this)(i)) : &((*this)(i-MeshX*MeshY)));
-            (*this)(i).Up = (i+MeshX*MeshY >= Num_Nodes ? &((*this)(i)) : &((*this)(i+MeshX*MeshY)));
+            SimuNodes.at(i).setNbhd(WHICHDIR::DirF, (i-MeshY < 0                ? &(SimuNodes.at(i)) : &(SimuNodes.at(i-MeshY))));
+            SimuNodes.at(i).setNbhd(WHICHDIR::DirB, (i+MeshY >= Num_Nodes       ? &(SimuNodes.at(i)) : &(SimuNodes.at(i+MeshY))));
+            SimuNodes.at(i).setNbhd(WHICHDIR::DirL, (i-1 < 0                    ? &(SimuNodes.at(i)) : &(SimuNodes.at(i-1))));
+            SimuNodes.at(i).setNbhd(WHICHDIR::DirR, (i+1 >= Num_Nodes           ? &(SimuNodes.at(i)) : &(SimuNodes.at(i+1))));
+            SimuNodes.at(i).setNbhd(WHICHDIR::DirU, (i-MeshX*MeshY < 0          ? &(SimuNodes.at(i)) : &(SimuNodes.at(i-MeshX*MeshY))));
+            SimuNodes.at(i).setNbhd(WHICHDIR::DirD, (i+MeshX*MeshY >= Num_Nodes ? &(SimuNodes.at(i)) : &(SimuNodes.at(i+MeshX*MeshY))));
 
-            if (whichBOUNDCOND == BOUNDCOND::PERIODIC){
-                if (i%MeshX == 0){
-                    (*this)(i).Left = &((*this)(i+(MeshX-1)));
-                }
-                if (i%MeshX == (MeshX-1)){
-                    (*this)(i).Right = &((*this)(i-(MeshX-1)));
-                }
+            if (whichBOUNDCOND == BOUNDCOND::BndPERIODIC){
+                //forward
                 if ((i%(MeshX*MeshY))>=0 && (i%(MeshX*MeshY))<MeshX){
-                    (*this)(i).Forward = &((*this)(i+MeshX*(MeshY-1)));
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirF, &(SimuNodes.at(i+MeshX*(MeshY-1))));
                 }
+                //backward
                 if ((i%(MeshX*MeshY))>=MeshX*(MeshY-1) && (i%(MeshX*MeshY))<MeshX*MeshY){
-                    (*this)(i).Backward = &((*this)(i-MeshX*(MeshY-1)));
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirB, &(SimuNodes.at(i-MeshX*(MeshY-1))));
                 }
+                //left
+                if (i%MeshX == 0){
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirL, &(SimuNodes.at(i+(MeshX-1))));
+                }
+                //right
+                if (i%MeshX == (MeshX-1)){
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirR, &(SimuNodes.at(i-(MeshX-1))));
+                }
+                //down
                 if (i>=0 && i<MeshX*MeshY){
-                    (*this)(i).Down = &((*this)(i+MeshX*MeshY*(MeshZ-1)));
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirU, &(SimuNodes.at(i+MeshX*MeshY*(MeshZ-1))));
                 }
+                //up
                 if (i>=MeshX*MeshY*(MeshZ-1) && i<MeshX*MeshY*MeshZ){
-                    (*this)(i).Up = &((*this)(i-MeshX*MeshY*(MeshZ-1)));
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirD, &(SimuNodes.at(i-MeshX*MeshY*(MeshZ-1))));
                 }
             }
-            //              /**/
+
+            if (whichBOUNDCOND == BOUNDCOND::BndCONST){
+                //forward
+                if ((i%(MeshX*MeshY))>=0 && (i%(MeshX*MeshY))<MeshX){
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirF, &SimuNodes.at(i));
+                }
+                //backward
+                if ((i%(MeshX*MeshY))>=MeshX*(MeshY-1) && (i%(MeshX*MeshY))<MeshX*MeshY){
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirB, &SimuNodes.at(i));
+                }
+                //left
+                if (i%MeshX == 0){
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirL, &SimuNodes.at(i));
+                }
+                //right
+                if (i%MeshX == (MeshX-1)){
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirR, &SimuNodes.at(i));
+                }
+                //up
+                if (i>=0 && i<MeshX*MeshY){
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirU, &SimuNodes.at(i));
+                }
+                //down
+                if (i>=MeshX*MeshY*(MeshZ-1) && i<MeshX*MeshY*MeshZ){
+                    SimuNodes.at(i).setNbhd(WHICHDIR::DirD, &SimuNodes.at(i));
+                }
+            }
+            
+            if(whichBOUNDCOND == BOUNDCOND::BndADIABATIC){}
         }
     }
 
@@ -130,7 +164,7 @@ class SimulationMesh{
         if (getNum_Ent(whichpara) != 0 &&Index<getNum_Ent(whichpara))
         #pragma omp parallel for
             for (int i = 0; i < Num_Nodes;i++){
-                result.at(i) = ((*this)(i).getProp(whichpara).at(Index));
+                result.at(i) = (SimuNodes.at(i).getProp(whichpara).at(Index));
             }
         else throw std::out_of_range("Index out of range");
         return result;
@@ -176,18 +210,18 @@ class SimulationMesh{
     }
 
     int getNum_Ent(WHICHPARA which){
-        return (*this)(0).getNum_Ent(which);
+        return SimuNodes.at(0).getNum_Ent(which);
     }
 
     void updateCustValue(int _where, int _Index, double _val){
-        (*this)(_where).Cust_Node.CustVal.at(_Index) = _val;
+        SimuNodes.at(_where).Cust_Node.CustVal.at(_Index) = _val;
     }
 
     /*************************************************************/
 
     void updateNodeCon(int where, double _con){
-        if ((*this)(where).getNum_Ent(WHICHPARA::CON) == 1)
-            (*this)(where).Con_Node.updateVal(0, _con);
+        if (SimuNodes.at(where).getNum_Ent(WHICHPARA::CON) == 1)
+            SimuNodes.at(where).Con_Node.updateVal(0, _con);
         else throw std::invalid_argument("Exist more than one element");
     }
 
@@ -198,12 +232,12 @@ class SimulationMesh{
     /*************************************************************/
     void updateMeshPhs(int Index, std::vector<double> _val){
         for (int i = 0; i < Num_Nodes; i++){
-            (*this)(i).Phs_Node.updateVal(Index, _val.at(i));
+            SimuNodes.at(i).Phs_Node.updateVal(Index, _val.at(i));
         }
     }
 
     void updateNodePhs(int where, int Index, double _phs){
-        (*this)(where).Phs_Node.updateVal(Index, _phs);
+        SimuNodes.at(where).Phs_Node.updateVal(Index, _phs);
     }
 
     void updateNodePhs(std::vector<int> where, int Index, double _phs){
@@ -219,15 +253,15 @@ class SimulationMesh{
         double dx = StepX;
         double dy = StepY;
         double dz = StepZ;
-        if (whichSTNCL == STENCILE::FIVEPOINT){
+        if (whichSTNCL == STENCILE::StencFIVE){
         #pragma omp parallel for collapse(2)
-            for (int Index = 0; Index < (*this)(0).getNum_Ent(whichpara); ++Index){
+            for (int Index = 0; Index < SimuNodes.at(0).getNum_Ent(whichpara); ++Index){
                 for (auto &node : SimuNodes){
                     double c = node.getProp(whichpara).at(Index);
-                    double f = node.Forward->getProp(whichpara).at(Index);
-                    double b = node.Backward->getProp(whichpara).at(Index);
-                    double l = node.Left->getProp(whichpara).at(Index);
-                    double r = node.Right->getProp(whichpara).at(Index);
+                    double f = node.getNbhd(WHICHDIR::DirF)->getProp(whichpara).at(Index);
+                    double b = node.getNbhd(WHICHDIR::DirB)->getProp(whichpara).at(Index);
+                    double l = node.getNbhd(WHICHDIR::DirL)->getProp(whichpara).at(Index);
+                    double r = node.getNbhd(WHICHDIR::DirR)->getProp(whichpara).at(Index);
 
                     result = ((f+b+l+r-4*c)/(dx*dy*dz));
                     if (whichpara == WHICHPARA::PHSFRAC)
@@ -243,44 +277,43 @@ class SimulationMesh{
     }
 
     void Laplacian(WHICHPARA whichpara){
-        Laplacian(STENCILE::FIVEPOINT, whichpara);
+        Laplacian(STENCILE::StencFIVE, whichpara);
         return;
     }
     /*************************************************************/
     void showGlobalInfo(); // show the basic information of the mesh
-    void showNodesProp(WHICHPARA which, int Index); // show one of the properties of the (*this)(i)s inside the mesh
+    void showNodesProp(WHICHPARA which, int Index); // show one of the properties of the SimuNodes.at(i)s inside the mesh
 
-    void outFilehead(std::string dirname, int istep);
-    void outAve(std::string dirname, WHICHPARA whichpara, int istep);
-    void outAll(std::string dirname, WHICHPARA whichpara, int istep);
+    void outVTKFilehead(std::string _dirname, int istep);
+    void outVTKAve(std::string _dirname, WHICHPARA whichpara, int istep);
+    void outVTKAll(std::string _dirname, WHICHPARA whichpara, int istep);
 
-    void outFile(std::string dirname, int istep){
-        outFilehead(dirname, istep);
-        outAve(dirname, WHICHPARA::CON, istep);
-        outAve(dirname, WHICHPARA::PHSFRAC, istep);
+    void outVTK(std::string _dirname, int istep){
+        outVTKFilehead(_dirname, istep);
+        outVTKAve(_dirname, WHICHPARA::CON, istep);
+        outVTKAve(_dirname, WHICHPARA::PHSFRAC, istep);
     }
-
 };
 
 void SimulationMesh::showGlobalInfo(){
     std::cout<<"SimulationMesh Properties:\n";
     std::cout<<"Mesh Size:\t\t"<<MeshX<<"\u0078"<<MeshY<<"\u0078"<<MeshZ<<"\n";
     std::cout<<"Elements:\t\t";
-    for (auto ent : (*this)(0).Con_Node.Entrys)
+    for (auto ent : SimuNodes.at(0).Con_Node.Entrys)
         std::cout<<ent.Element<<" ";
-    std::cout<<"\nNumber of Phase:\t"<<(*this)(0).getNum_Ent(WHICHPARA::PHSFRAC);
+    std::cout<<"\nNumber of Phase:\t"<<SimuNodes.at(0).getNum_Ent(WHICHPARA::PHSFRAC);
 
     std::cout<<"\n-----------------------------------------------------------------\n"<<std::endl;
 }
 
 void SimulationMesh::showNodesProp(WHICHPARA which, int Index){ //which para, Index of para
-    if (which == WHICHPARA::CON)std::cout<<"Concentration of "<<(*this)(0).Con_Node.Entrys.at(Index).Element<<"\n";
+    if (which == WHICHPARA::CON)std::cout<<"Concentration of "<<SimuNodes.at(0).Con_Node.Entrys.at(Index).Element<<"\n";
     if (which == WHICHPARA::PHSFRAC)std::cout<<"Order Parameter of "<<Index<<" grain\n";
     if (which == WHICHPARA::CUSTOM)std::cout<<"Custom value \n";
     for (long i = 0; i < Num_Nodes; i++){
         std::cout<<std::fixed<<std::setprecision(10)<<
-            // (*this)(i).getProp(which).at(Index)
-            (*this)(i).getLap(WHICHPARA::CON, Index)
+            SimuNodes.at(i).getProp(which).at(Index)
+            // SimuNodes.at(i).getLap(WHICHPARA::CON, Index)
             <<" ";
         if (i%MeshX==MeshX-1)std::cout<<"\n";
         if (i%(MeshX*MeshY) == MeshX*MeshY-1)std::cout<<"\n";
@@ -288,24 +321,28 @@ void SimulationMesh::showNodesProp(WHICHPARA which, int Index){ //which para, In
     std::cout<<"-----------------------------------------------------------------\n"<<std::endl;
 }
 
-std::string toVTK_Path(std::string dirname){
+/*
+ ! under present folder create a folder 'Result/_dirname' to save vtk files
+ ! if "../" is used, the 'Result' will be  omitted
+*/
+std::string toVTK_Path(std::string _dirname){
     // legal name check
-    if (dirname.empty())throw std::invalid_argument("dirname can't be empty");
-    for (auto _ch : dirname){
-        if (std::isspace(_ch))throw std::invalid_argument("dirname can't contain space, maybe use underscore");
+    if (_dirname.empty())throw std::invalid_argument("_dirname can't be empty");
+    for (auto _ch : _dirname){
+        if (std::isspace(_ch))throw std::invalid_argument("_dirname can't contain space, maybe use underscore");
     }
 
     std::string result("./Result/");
-    result = result + dirname;
+    result = result + _dirname;
+    std::filesystem::create_directories(result);
     return result;
 }
 
-inline void SimulationMesh::outFilehead(std::string dirname, int istep){
+inline void SimulationMesh::outVTKFilehead(std::string _dirname, int istep){
 
-    std::filesystem::create_directories(dirname);
 
-    char *filename = new char[dirname.length()+1];
-    std::strcpy(filename, dirname.c_str());
+    char *filename = new char[_dirname.length()+1];
+    std::strcpy(filename, _dirname.c_str());
 
     std::sprintf(filename, "%s/time_%04d.vtk", filename, istep);
 
@@ -322,23 +359,20 @@ inline void SimulationMesh::outFilehead(std::string dirname, int istep){
     // size info
     outfile<<"DIMENSIONS "<<MeshX<<"  "<<MeshY<<"  "<<MeshZ<<"\n";
     outfile<<"POINTS "<<Num_Nodes<<"   float\n";
-    double dumx, dumy, dumz;
     for (int i = 0;i<MeshX;i++)
         for (int j = 0;j<MeshY;j++)
             for (int k = 0; k < MeshZ; k++){
-                dumx = i*StepLength.at(0); dumy = j*StepLength.at(1); dumz = k*StepLength.at(2);
-
-                outfile<<dumx<<"   "<<dumy<<"   "<<dumz<<"\n";
+                outfile<<i*StepLength.at(0)<<"   "<<j*StepLength.at(1)<<"   "<<k*StepLength.at(2)<<"\n";
             }
     outfile<<"POINT_DATA "<<Num_Nodes<<"\n";
 
     outfile.close();
 }
 
-inline void SimulationMesh::outAve(std::string dirname, WHICHPARA whichpara, int istep){
+inline void SimulationMesh::outVTKAve(std::string _dirname, WHICHPARA whichpara, int istep){
 
-    char *filename = new char[dirname.length()+1];
-    std::strcpy(filename, dirname.c_str());
+    char *filename = new char[_dirname.length()+1];
+    std::strcpy(filename, _dirname.c_str());
     std::sprintf(filename, "%s/time_%04d.vtk", filename, istep);
 
     std::ofstream outfile;
@@ -368,10 +402,10 @@ inline void SimulationMesh::outAve(std::string dirname, WHICHPARA whichpara, int
 
 }
 
-inline void SimulationMesh::outAll(std::string dirname, WHICHPARA whichpara, int istep){
+inline void SimulationMesh::outVTKAll(std::string _dirname, WHICHPARA whichpara, int istep){
 
-    char *filename = new char[dirname.length()+1];
-    std::strcpy(filename, dirname.c_str());
+    char *filename = new char[_dirname.length()+1];
+    std::strcpy(filename, _dirname.c_str());
     std::sprintf(filename, "%s/time_%04d.vtk", filename, istep);
 
     std::ofstream outfile;

@@ -39,7 +39,7 @@ int main(){
 
         if (fmod(istep, nprint) == 0){
             cout<<"Done Step: "<<istep<<endl;
-            Box.outFile(istep);
+            Box.outVTKFile("../../CaseStudy1_Recurrence",istep);
         }
     }
     return 0;

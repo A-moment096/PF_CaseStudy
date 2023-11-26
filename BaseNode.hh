@@ -109,18 +109,22 @@ class BaseNode{
 
     void deletEntry(int _Index){
         if (Num_Ent <= 1) throw std::out_of_range("Last entry");
-        else
-            for (auto &ent : Entrys){
-                if (ent.Index == _Index){
-                    std::iterator delPos = std::find(Entrys.begin(), Entrys.end(), ent);
-                    Entrys.erase(delPos);
-                    return;
-                }
-            }
+        else if(_Index<Num_Ent){
+            // for (auto &ent : Entrys){
+            //     if (ent.Index == _Index){
+            //         Entrys.erase(std::find(Entrys.begin(), Entrys.end(), ent));
+            //         updateIndex();
+            //         return;
+            //     }
+            // }
+            Entrys.erase(Entrys.begin()+_Index);
+            updateIndex();
+            return;
+        }
         throw std::out_of_range("Not in entry list");
     }
 
-    void updateVal(int _Index, double _con){
+    void updateVal(int _Index, double &_con){
         for (auto &ent : Entrys){
             if (ent.Index == _Index){
                 ent.Val = _con;
@@ -130,7 +134,7 @@ class BaseNode{
         throw std::invalid_argument("No such element");
     }
 
-    void updateLap(int _Index, double _Lap){
+    void updateLap(int _Index, double &_Lap){
         for (auto &ent : Entrys){
             if (ent.Index == _Index){
                 ent.Lap = _Lap;
@@ -140,7 +144,7 @@ class BaseNode{
         throw std::out_of_range("Not in entry list");
     }
 
-    void updateGrad(int _Index, double _Grad){
+    void updateGrad(int _Index, double &_Grad){
         for (auto &ent : Entrys){
             if (ent.Index == _Index){
                 ent.Grad = _Grad;
@@ -153,6 +157,7 @@ class BaseNode{
     /*************************************************************/
 
     void updateIndex(){
+        Num_Ent = Entrys.size();
         for (int i = 0; i < Num_Ent; i++){
             (*this)(i).Index = i;
         }

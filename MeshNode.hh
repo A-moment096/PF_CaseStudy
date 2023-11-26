@@ -6,44 +6,41 @@
 #include <iomanip>
 #include <vector>
 
-// #include "ConNode.hh"
-// #include "PhaseNode.hh"
 #include "CustNode.hh"
 
 #include "BaseNode.hh"
 /***********************************************
-This is MeshNode Class, Every method is focused
-only on one node (or say, point) in simulation
-region (or, box).
+This is MeshNode Class, A node manager.
+Every property-node is controlled here.
 ************************************************/
 
 enum WHICHPARA{ CON, PHSFRAC, CUSTOM = 99 };
-// enum WHICHDIR {UP,DOWN,FORWARD,BACKWARD,LEFT,RIGHT};
+enum WHICHDIR{ DirF, DirB, DirL, DirR, DirU, DirD };
 
 class MeshNode{
-    public:
-
-    double Temperature = 298.15;
-
-    PhaseNode Phs_Node;
-    ConNode Con_Node;
-    CustNode Cust_Node;
-
+    private:
     MeshNode *Up = nullptr;
-    MeshNode *Down = nullptr;
     MeshNode *Forward = nullptr;
     MeshNode *Backward = nullptr;
     MeshNode *Left = nullptr;
     MeshNode *Right = nullptr;
+    MeshNode *Down = nullptr;
+
+    public:
+    double Temperature = 298.15;
+    PhaseNode Phs_Node;
+    ConNode Con_Node;
+    CustNode Cust_Node;
+
 
     /*************************************************************/
+    // Construct & Deconstruct Functions
 
-         // Construct & Deconstruct Functions
     MeshNode(){
         Phs_Node = Def_PhsNode;
         Con_Node = Def_ConNode;
         Cust_Node = Def_CustNode;
-    }; //Accept Default Parameters
+    };
 
     MeshNode(PhaseNode _phs_node, ConNode _con_node){
         Phs_Node = _phs_node;
@@ -68,6 +65,46 @@ class MeshNode{
     /*************************************************************/
     // Manipulate Methods
 
+    void setNbhd(WHICHDIR whichdir, MeshNode *_node){
+        switch (whichdir){
+        case DirF: Forward = _node;
+            break;
+        case DirB: Backward = _node;
+            break;
+        case DirL: Left = _node;
+            break;
+        case DirR: Right = _node;
+            break;
+        case DirU: Up = _node;
+            break;
+        case DirD: Down = _node;
+            break;
+        default:
+            break;
+        }
+    }
+
+    MeshNode *getNbhd(WHICHDIR whichdir){
+        switch (whichdir){
+        case DirF: return Forward;
+            break;
+        case DirB: return Backward;
+            break;
+        case DirL: return Left;
+            break;
+        case DirR: return Right;
+            break;
+        case DirU: return Up;
+            break;
+        case DirD: return Down;
+            break;
+        default:
+            return nullptr;
+            break;
+        }
+    }
+
+    /*************************************************************/
     void addEnt(WHICHPARA whichpara, int _num){
         switch (whichpara){
         case WHICHPARA::CON:
@@ -185,8 +222,8 @@ void MeshNode::showNode(){
     std::cout<<"Phase Index:\tPhase Fraction:\t\tElement:\tConcentration:\n";
     for (int i = 0; i < Phs_Node.Num_Ent; i++){
         for (int j = 0; j < Con_Node.Num_Ent; j++){
-            std::cout<<Phs_Node.Entrys.at(i).Index<<"\t\t"<<std::fixed<<std::setprecision(6)<<Phs_Node.getVal().at(i)<<"\t\t";
-            std::cout<<Con_Node.Entrys.at(j).Element<<"\t\t"<<std::fixed<<std::setprecision(6)<<Con_Node.getVal().at(j)<<"\n";
+            std::cout<<Phs_Node.Entrys.at(i).Index<<"\t\t"<<std::fixed<<std::setprecision(6)<<Phs_Node.getVal(i)<<"\t\t";
+            std::cout<<Con_Node.Entrys.at(j).Element<<"\t\t"<<std::fixed<<std::setprecision(6)<<Con_Node.getVal(j)<<"\n";
         }
         std::cout<<"\n";
     }
