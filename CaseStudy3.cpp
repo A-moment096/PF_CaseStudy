@@ -21,17 +21,17 @@ double dfdeta(double c, double x, double sum2){
 int main(){
     auto start = std::chrono::high_resolution_clock::now();
 
-    std::string _path(toVTK_Path("../../PoreShrink2"));
+    std::string _path(toVTK_Path("../../NineGrainSint"));
 
     MeshNode node(PhaseNode(std::vector<PhaseEntry>(2, Def_PhsEnt)), Def_ConNode);
     SimulationMesh mesh({ 100, 100, 1 }, { 0.5, 0.5, 1 }, node);
 
-    const double &&Dvol = 0.040, &&Dvap = 0.002, &&Dsurf = 32.0, &&Dgb = 1.6, &&coefm = 5.0, &&coefk = 2.0, &&coefl = 5.0;
+    const double &&Dvol = 0.040, &&Dvap = 0.002, &&Dsurf = 16.0, &&Dgb = 1.6, &&coefm = 5.0, &&coefk = 2.0, &&coefl = 5.0;
 
     const int &&nstep = 5000, &&nprint = 50; double &&dtime = 1e-4;
 
     // Initializer
-    int simuflag = 1;
+    int simuflag = 2;
     if (simuflag==0){
         double rad1 = 20, rad2 = 10;
         int Px = mesh.MeshX/2, Py1 = 40, Py2 = 70;
@@ -118,20 +118,24 @@ int main(){
                 }
     }
 
+    int PhsNum = mesh(0).Phs_Node.Num_Ent;
 
     for (int istep = 0; istep<=nstep; ++istep){
-        // mesh.Laplacian(WHICHPARA::CON);
-        // mesh.Laplacian(WHICHPARA::PHSFRAC);
+        mesh.Laplacian(WHICHPARA::CON);
+        mesh.Laplacian(WHICHPARA::PHSFRAC);
 
     #pragma omp parallel for
         for (auto &node:mesh.SimuNodes){
-            double c = node.Con_Node.getVal().at(0); // node.getVal().at(0)
+            double c = node.Con_Node.getVal(0); // node.getVal().at(0)
             double &&dummy0 = std::move(dfdcon(c, node.sumPhsFrac3(), node.sumPhsFrac2()));
             node.Cust_Node.updateVal(0, dummy0-0.5*coefm*(node.getLap(WHICHPARA::CON, 0)));
-
-        #pragma omp parallel for
-            for (int i = 0; i<node.getNum_Ent(WHICHPARA::PHSFRAC); ++i){
-                double x = node.Phs_Node.getVal().at(i);
+        }
+        #pragma omp parallel for collapse(2)
+        for (auto &node:mesh.SimuNodes){
+            // #pragma omp parallel for
+            for (int i = 0; i<PhsNum; ++i){
+                double x = node.Phs_Node.getVal(i);
+                double c = node.Con_Node.getVal(0); // node.getVal().at(0)
 
                 double &&dummy1 = std::move(dfdeta(c, x, node.sumPhsFrac2()));
                 double &&dummy2 = std::move(x-dtime*coefl*(dummy1-0.5*coefk*node.Phs_Node.getLap(i)));
@@ -141,14 +145,14 @@ int main(){
             }
         }
 
-        // mesh.Laplacian(WHICHPARA::CUSTOM);
+        mesh.Laplacian(WHICHPARA::CUSTOM);
 
         double Diffu = 0;
 
     #pragma omp parallel for
         for (auto &node:mesh.SimuNodes){
             double sum = node.sumPhsFrac()*node.sumPhsFrac()-node.sumPhsFrac2();
-            double c = node.Con_Node.getVal().at(0);
+            double c = node.Con_Node.getVal(0);
             Diffu = Dvol*(phi(c))+Dvap*(1-phi(c))+Dsurf*c*(1-c)+Dgb*sum;
 
             double &&dumy = std::move(c+dtime*Diffu*node.getLap(WHICHPARA::CUSTOM, 0));
@@ -160,7 +164,8 @@ int main(){
 
         if (fmod(istep, nprint)==0){
             mesh.outVTK(_path, istep);
-            cout<<"Done Step: "<<istep<<endl;
+            cout<<"Done Step: "<<istep;
+            RunTimeCounter(start);
         }
     }
 

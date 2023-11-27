@@ -269,11 +269,6 @@ class SimulationMesh{
         #pragma omp parallel for collapse(2)
         for (auto &node : SimuNodes){
             for (int Index = 0; Index < SimuNodes.at(0).getNum_Ent(whichpara); ++Index){
-        // std::vector<double> cs(getMeshProp(whichpara,Index));
-        // std::vector<double> fs(getMeshProp(whichpara,Index));
-        // std::vector<double> bs(getMeshProp(whichpara,Index));
-        // std::vector<double> ls(getMeshProp(whichpara,Index));
-        // std::vector<double> rs(getMeshProp(whichpara,Index));
                     double c = node.getVal(whichpara,Index);
                     double f = node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,Index);
                     double b = node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,Index);
