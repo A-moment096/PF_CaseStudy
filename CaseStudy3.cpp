@@ -21,18 +21,23 @@ double dfdeta(double c, double x, double sum2){
 int main(){
     auto start = std::chrono::high_resolution_clock::now();
 
-    std::string _path(toVTK_Path("../../NineGrainSint"));
+/*******************************************************************************************************/
+    //Preparation
+    //about file path, constants, parameters, mesh and nodes, the  
+    std::string _path(toVTK_Path("../../NineGrainSint1"));
 
     MeshNode node(PhaseNode(std::vector<PhaseEntry>(2, Def_PhsEnt)), Def_ConNode);
     SimulationMesh mesh({ 100, 100, 1 }, { 0.5, 0.5, 1 }, node);
 
-    const double &&Dvol = 0.040, &&Dvap = 0.002, &&Dsurf = 16.0, &&Dgb = 1.6, &&coefm = 5.0, &&coefk = 2.0, &&coefl = 5.0;
+    const double &&Dvol = 0.040, &&Dvap = 0.002, &&Dsurf = 16.0, &&Dgb = 8, &&coefm = 5.0, &&coefk = 2.0, &&coefl = 5.0;
 
-    const int &&nstep = 5000, &&nprint = 50; double &&dtime = 1e-4;
+    const int &&nstep = 20000, &&nprint = 50; double &&dtime = 1e-4;
 
-    std::vector<int> isteps(nstep/nprint);
-    std::vector<double> vals(nstep/nprint);
-
+    std::vector<int> isteps;
+    std::vector<double> vals;
+    isteps.reserve(nstep/nprint);
+    vals.reserve(nstep/nprint);
+/*******************************************************************************************************/
     // Initializer
     int simuflag = 1;
     if (simuflag==0){
@@ -122,9 +127,8 @@ int main(){
     }
 
     int PhsNum = mesh(0).Phs_Node.Num_Ent;
-    int pstep = 0;
+
     for (int istep = 0; istep<=nstep; ++istep){
-        pstep++;
         mesh.Laplacian(WHICHPARA::CON);
         mesh.Laplacian(WHICHPARA::PHSFRAC);
 
@@ -137,7 +141,6 @@ int main(){
 
         #pragma omp parallel for collapse(2)
         for (auto &node:mesh.SimuNodes){
-            // #pragma omp parallel for
             for (int i = 0; i<PhsNum; ++i){
                 double x = node.Phs_Node.getVal(i);
                 double c = node.Con_Node.getVal(0); // node.getVal().at(0)
@@ -167,9 +170,9 @@ int main(){
             node.Con_Node.updateVal(0, dumy);
         }
 
-        if (fmod(pstep, nprint)==0){
+        if (fmod(istep, nprint)==0){
             mesh.outVTK(_path, istep);
-            isteps.push_back(pstep);
+            isteps.push_back(istep);
             vals.push_back(mesh.CalDensity());
             cout<<"Done Step: "<<istep;
             RunTimeCounter(start);

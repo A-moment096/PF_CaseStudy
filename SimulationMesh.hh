@@ -331,7 +331,7 @@ class SimulationMesh{
     std::string filename(_dirname+"/"+_filename+".csv");
     std::ofstream outfile;
     outfile.open(filename);
-    for(int i = 0; i < isteps.size(); i++){
+    for(int i = 0; i < (int) isteps.size(); i++){
         outfile<<isteps.at(i)<<","<<_vals.at(i)<<"\n";
     }
 

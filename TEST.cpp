@@ -23,21 +23,24 @@ int main(){
         for (int i = 0; i<mesh.Num_Nodes; ++i){
             mesh.updateNodeCon(i,0,i);
         }
-    double test = 12;
-    mesh.threshold(test,24,27);
-    cout<<test;
+    std::vector<double> testdouble(12,0);
+    testdouble.reserve(1000);
+    cout<<testdouble.size()<<" "<<testdouble.capacity();
 
-    cout<<mesh(0).getNbhd(WHICHDIR::DirF)->Con_Node.getVal(0)<<endl;
-    cout<<mesh(0).getNbhd(WHICHDIR::DirB)->Con_Node.getVal(0)<<endl;
-    cout<<mesh(0).getNbhd(WHICHDIR::DirL)->Con_Node.getVal(0)<<endl;
-    cout<<mesh(0).getNbhd(WHICHDIR::DirR)->Con_Node.getVal(0)<<endl;
-    cout<<mesh(0).getNbhd(WHICHDIR::DirU)->Con_Node.getVal(0)<<endl;
-    cout<<mesh(0).getNbhd(WHICHDIR::DirD)->Con_Node.getVal(0)<<endl;
+    // mesh.threshold(test,24,27);
+    // cout<<test;
 
-    std::string ProjName("../../TEST");int istep = 5;
-    ProjName = toVTK_Path(ProjName);
-    // mesh.outVTK(ProjName, istep);
-    mesh.outCSV(ProjName,"testcsv",0,0);
+    // cout<<mesh(0).getNbhd(WHICHDIR::DirF)->Con_Node.getVal(0)<<endl;
+    // cout<<mesh(0).getNbhd(WHICHDIR::DirB)->Con_Node.getVal(0)<<endl;
+    // cout<<mesh(0).getNbhd(WHICHDIR::DirL)->Con_Node.getVal(0)<<endl;
+    // cout<<mesh(0).getNbhd(WHICHDIR::DirR)->Con_Node.getVal(0)<<endl;
+    // cout<<mesh(0).getNbhd(WHICHDIR::DirU)->Con_Node.getVal(0)<<endl;
+    // cout<<mesh(0).getNbhd(WHICHDIR::DirD)->Con_Node.getVal(0)<<endl;
+
+    // std::string ProjName("../../TEST");int istep = 5;
+    // ProjName = toVTK_Path(ProjName);
+    // // mesh.outVTK(ProjName, istep);
+    // mesh.outCSV(ProjName,"testcsv",0,0);
 
     RunTimeCounter(start);
     // auto duration = std::chrono::duration_cast< std::chrono::microseconds > (stop-start);
