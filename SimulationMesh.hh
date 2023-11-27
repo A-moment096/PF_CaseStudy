@@ -292,6 +292,14 @@ class SimulationMesh{
         Laplacian(STENCILE::StencFIVE, whichpara);
         return;
     }
+
+    double CalDensity(){
+        double sum;
+        for(auto node : SimuNodes)
+            for(int i = 0; i < node.getNum_Ent(WHICHPARA::PHSFRAC); i++)
+                sum += node.Phs_Node.getVal(i);
+        return sum/Num_Nodes;
+    }
     /*************************************************************/
     void showGlobalInfo(); 
     void showNodesProp(WHICHPARA which, int Index); 
@@ -305,6 +313,31 @@ class SimulationMesh{
         outVTKAve(_dirname, WHICHPARA::CON, istep);
         outVTKAve(_dirname, WHICHPARA::PHSFRAC, istep);
     }
+
+    void outCSV(std::string _dirname, std::string _filename,int istep,double _val){
+
+    std::string filename(_dirname+"/"+_filename+".csv");
+    
+    std::ofstream outfile;
+    outfile.open(filename, std::ios::app);
+
+    outfile<<istep<<","<<_val<<"\n";
+
+    outfile.close();
+    }
+
+    void outCSV(std::string _dirname, std::string _filename,std::vector<int> isteps,std::vector<double> _vals){
+
+    std::string filename(_dirname+"/"+_filename+".csv");
+    std::ofstream outfile;
+    outfile.open(filename);
+    for(int i = 0; i < isteps.size(); i++){
+        outfile<<isteps.at(i)<<","<<_vals.at(i)<<"\n";
+    }
+
+    outfile.close();
+    }
+
 };
 
 // show the basic information of the mesh
@@ -320,6 +353,10 @@ void SimulationMesh::showGlobalInfo(){
 
     std::cout<<"\n-----------------------------------------------------------------\n"<<std::endl;
 }
+
+/**************************************************************************************************************************/
+/**************************************************************************************************************************/
+/**************************************************************************************************************************/
 
 // show one of the properties of the SimuNodes.at(i)s inside the mesh
 void SimulationMesh::showNodesProp(WHICHPARA which, int Index){ //which para, Index of para

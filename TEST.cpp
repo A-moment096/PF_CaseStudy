@@ -34,9 +34,10 @@ int main(){
     cout<<mesh(0).getNbhd(WHICHDIR::DirU)->Con_Node.getVal(0)<<endl;
     cout<<mesh(0).getNbhd(WHICHDIR::DirD)->Con_Node.getVal(0)<<endl;
 
-    // std::string ProjName("../../TEST");int istep = 5;
-    // ProjName = toVTK_Path(ProjName);
+    std::string ProjName("../../TEST");int istep = 5;
+    ProjName = toVTK_Path(ProjName);
     // mesh.outVTK(ProjName, istep);
+    mesh.outCSV(ProjName,"testcsv",0,0);
 
     RunTimeCounter(start);
     // auto duration = std::chrono::duration_cast< std::chrono::microseconds > (stop-start);

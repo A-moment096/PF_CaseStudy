@@ -30,8 +30,11 @@ int main(){
 
     const int &&nstep = 5000, &&nprint = 50; double &&dtime = 1e-4;
 
+    std::vector<int> isteps(nstep/nprint);
+    std::vector<double> vals(nstep/nprint);
+
     // Initializer
-    int simuflag = 2;
+    int simuflag = 1;
     if (simuflag==0){
         double rad1 = 20, rad2 = 10;
         int Px = mesh.MeshX/2, Py1 = 40, Py2 = 70;
@@ -119,17 +122,19 @@ int main(){
     }
 
     int PhsNum = mesh(0).Phs_Node.Num_Ent;
-
+    int pstep = 0;
     for (int istep = 0; istep<=nstep; ++istep){
+        pstep++;
         mesh.Laplacian(WHICHPARA::CON);
         mesh.Laplacian(WHICHPARA::PHSFRAC);
 
-    #pragma omp parallel for
+        #pragma omp parallel for
         for (auto &node:mesh.SimuNodes){
             double c = node.Con_Node.getVal(0); // node.getVal().at(0)
             double &&dummy0 = std::move(dfdcon(c, node.sumPhsFrac3(), node.sumPhsFrac2()));
             node.Cust_Node.updateVal(0, dummy0-0.5*coefm*(node.getLap(WHICHPARA::CON, 0)));
         }
+
         #pragma omp parallel for collapse(2)
         for (auto &node:mesh.SimuNodes){
             // #pragma omp parallel for
@@ -149,7 +154,7 @@ int main(){
 
         double Diffu = 0;
 
-    #pragma omp parallel for
+        #pragma omp parallel for
         for (auto &node:mesh.SimuNodes){
             double sum = node.sumPhsFrac()*node.sumPhsFrac()-node.sumPhsFrac2();
             double c = node.Con_Node.getVal(0);
@@ -162,12 +167,17 @@ int main(){
             node.Con_Node.updateVal(0, dumy);
         }
 
-        if (fmod(istep, nprint)==0){
+        if (fmod(pstep, nprint)==0){
             mesh.outVTK(_path, istep);
+            isteps.push_back(pstep);
+            vals.push_back(mesh.CalDensity());
             cout<<"Done Step: "<<istep;
             RunTimeCounter(start);
+            // cout<<mesh.CalDensity()<<endl;
         }
     }
+    
+    mesh.outCSV(_path,"step_density",isteps,vals);
 
     RunTimeCounter(start);
     return 0;
