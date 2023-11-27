@@ -6,8 +6,6 @@
 #include <iomanip>
 #include <vector>
 
-#include "CustNode.hh"
-
 #include "BaseNode.hh"
 /***********************************************
 This is MeshNode Class, A node manager.
@@ -59,7 +57,6 @@ class MeshNode{
         Backward = nullptr;
         Left = nullptr;
         Right = nullptr;
-        // Custom_Value.clear();
     };
 
     /*************************************************************/
@@ -135,7 +132,7 @@ class MeshNode{
             return Phs_Node.Num_Ent;
             break;
         case WHICHPARA::CUSTOM:
-            return Cust_Node.Num;
+            return Cust_Node.Num_Ent;
             break;
         default:
             throw std::invalid_argument("No such element");
@@ -144,7 +141,7 @@ class MeshNode{
         }
     }
 
-    std::vector<double> getProp(WHICHPARA whichpara){
+    std::vector<double> getVal(WHICHPARA whichpara){
         switch (whichpara){
         case WHICHPARA::CON:
             return Con_Node.getVal();
@@ -159,6 +156,25 @@ class MeshNode{
             break;
         }
         return {};
+    }
+
+    double getVal(WHICHPARA whichpara, int _Index){
+        switch (whichpara){
+        case WHICHPARA::CON:
+            return Con_Node.getVal(_Index);
+            break;
+        case WHICHPARA::PHSFRAC:
+            return Phs_Node.getVal(_Index);
+            break;
+        case WHICHPARA::CUSTOM:
+            return Cust_Node.getVal(_Index);
+            break;
+        default:
+            throw std::invalid_argument("No such Para");
+            return 1;
+            break;
+        }
+        return 1;
     }
 
     double getLap(int whichpara, int _Index){

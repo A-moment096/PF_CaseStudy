@@ -67,20 +67,6 @@ class SimulationMesh{
         else throw std::invalid_argument("Index Not in Mesh");
     }
 
-
-    void addEntry(WHICHPARA whichpara, int num){
-        switch (whichpara){
-        case WHICHPARA::CON:
-            for (auto &node : SimuNodes)node.Con_Node.addEntry(num);
-            break;
-        case WHICHPARA::PHSFRAC:
-            for (auto &node : SimuNodes)node.Phs_Node.addEntry(num);
-            break;
-        default:
-            break;
-        }
-    }
-
     /*************************************************************/
 
     void fillNodes(MeshNode Nodes){ // fill mesh with SimuNodes.at(i)s 
@@ -159,12 +145,48 @@ class SimulationMesh{
 
     /*************************************************************/
 
+    void addEntry(WHICHPARA whichpara, int num){
+        switch (whichpara){
+        case WHICHPARA::CON:
+            for (auto &node : SimuNodes)node.Con_Node.addEntry(num);
+            break;
+        case WHICHPARA::PHSFRAC:
+            for (auto &node : SimuNodes)node.Phs_Node.addEntry(num);
+            break;
+        case WHICHPARA::CUSTOM:
+            for (auto &node : SimuNodes)node.Cust_Node.addEntry(num);
+            break;
+        default:
+            break;
+        }
+    }
+
+    void deletEntry(WHICHPARA whichpara, int _Index){
+        switch (whichpara)
+        {
+        case WHICHPARA::CON:
+            for(auto &node : SimuNodes)node.Con_Node.deletEntry(_Index);
+            break;
+        case WHICHPARA::PHSFRAC:
+            for(auto &node : SimuNodes)node.Phs_Node.deletEntry(_Index);
+            break;
+        case WHICHPARA::CUSTOM:
+            for(auto &node : SimuNodes)node.Cust_Node.deletEntry(_Index);
+            break;                    
+        default:
+            break;
+        }
+    }
+    
+    /*************************************************************/
+
+    // get value of whichpara at Index's entry
     std::vector<double> getMeshProp(WHICHPARA whichpara, int Index){
         std::vector<double> result(Num_Nodes, 0.0);
         if (getNum_Ent(whichpara) != 0 &&Index<getNum_Ent(whichpara))
         #pragma omp parallel for
             for (int i = 0; i < Num_Nodes;i++){
-                result.at(i) = (SimuNodes.at(i).getProp(whichpara).at(Index));
+                result.at(i) = (SimuNodes.at(i).getVal(whichpara,Index));
             }
         else throw std::out_of_range("Index out of range");
         return result;
@@ -174,7 +196,7 @@ class SimulationMesh{
         std::vector<double> result;
         for (auto node : SimuNodes){
             double sum = 0;
-            for (auto val : node.getProp(whichpara)){
+            for (auto val : node.getVal(whichpara)){
                 sum += val*val;
             }
             sum = sqrt(sum);
@@ -184,15 +206,16 @@ class SimulationMesh{
         return result;
     }
 
+    /*************************************************************/
+
     void threshold(double &val, double min, double max){
         val>max ? val = max : (val<min ? val = min : val = val);
     }
 
-    /*************************************************************/
 
     std::vector<int> transCoord(int where){
         if (where<Num_Nodes){
-            std::vector<int>coord;
+            std::vector<int>coord(3);
             coord.at(0) = where%MeshX;
             coord.at(1) = ((where-coord.at(0)) / MeshX)%MeshY;
             coord.at(2) = (where-(coord.at(0)+coord.at(1)*MeshX)/(MeshX*MeshY));
@@ -213,28 +236,17 @@ class SimulationMesh{
         return SimuNodes.at(0).getNum_Ent(which);
     }
 
-    void updateCustValue(int _where, int _Index, double _val){
-        SimuNodes.at(_where).Cust_Node.CustVal.at(_Index) = _val;
+    /*************************************************************/
+
+    void updateNodeCon(int where, int Index, double _phs){
+        SimuNodes.at(where).Con_Node.updateVal(Index, _phs);
+    }
+
+    void updateNodeCon(std::vector<int> where, int Index, double _phs){
+        updateNodeCon(transCoord(where), Index, _phs);
     }
 
     /*************************************************************/
-
-    void updateNodeCon(int where, double _con){
-        if (SimuNodes.at(where).getNum_Ent(WHICHPARA::CON) == 1)
-            SimuNodes.at(where).Con_Node.updateVal(0, _con);
-        else throw std::invalid_argument("Exist more than one element");
-    }
-
-    void updateNodeCon(std::vector<int> where, double _con){
-        updateNodeCon(transCoord(where), _con);
-    }
-
-    /*************************************************************/
-    void updateMeshPhs(int Index, std::vector<double> _val){
-        for (int i = 0; i < Num_Nodes; i++){
-            SimuNodes.at(i).Phs_Node.updateVal(Index, _val.at(i));
-        }
-    }
 
     void updateNodePhs(int where, int Index, double _phs){
         SimuNodes.at(where).Phs_Node.updateVal(Index, _phs);
@@ -255,13 +267,18 @@ class SimulationMesh{
         double dz = StepZ;
         if (whichSTNCL == STENCILE::StencFIVE){
         #pragma omp parallel for collapse(2)
+        for (auto &node : SimuNodes){
             for (int Index = 0; Index < SimuNodes.at(0).getNum_Ent(whichpara); ++Index){
-                for (auto &node : SimuNodes){
-                    double c = node.getProp(whichpara).at(Index);
-                    double f = node.getNbhd(WHICHDIR::DirF)->getProp(whichpara).at(Index);
-                    double b = node.getNbhd(WHICHDIR::DirB)->getProp(whichpara).at(Index);
-                    double l = node.getNbhd(WHICHDIR::DirL)->getProp(whichpara).at(Index);
-                    double r = node.getNbhd(WHICHDIR::DirR)->getProp(whichpara).at(Index);
+        // std::vector<double> cs(getMeshProp(whichpara,Index));
+        // std::vector<double> fs(getMeshProp(whichpara,Index));
+        // std::vector<double> bs(getMeshProp(whichpara,Index));
+        // std::vector<double> ls(getMeshProp(whichpara,Index));
+        // std::vector<double> rs(getMeshProp(whichpara,Index));
+                    double c = node.getVal(whichpara,Index);
+                    double f = node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,Index);
+                    double b = node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,Index);
+                    double l = node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,Index);
+                    double r = node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,Index);
 
                     result = ((f+b+l+r-4*c)/(dx*dy*dz));
                     if (whichpara == WHICHPARA::PHSFRAC)
@@ -281,8 +298,8 @@ class SimulationMesh{
         return;
     }
     /*************************************************************/
-    void showGlobalInfo(); // show the basic information of the mesh
-    void showNodesProp(WHICHPARA which, int Index); // show one of the properties of the SimuNodes.at(i)s inside the mesh
+    void showGlobalInfo(); 
+    void showNodesProp(WHICHPARA which, int Index); 
 
     void outVTKFilehead(std::string _dirname, int istep);
     void outVTKAve(std::string _dirname, WHICHPARA whichpara, int istep);
@@ -295,6 +312,7 @@ class SimulationMesh{
     }
 };
 
+// show the basic information of the mesh
 void SimulationMesh::showGlobalInfo(){
     std::cout<<"SimulationMesh Properties:\n";
     std::cout<<"Mesh Size:\t\t"<<MeshX<<"\u0078"<<MeshY<<"\u0078"<<MeshZ<<"\n";
@@ -302,17 +320,20 @@ void SimulationMesh::showGlobalInfo(){
     for (auto ent : SimuNodes.at(0).Con_Node.Entrys)
         std::cout<<ent.Element<<" ";
     std::cout<<"\nNumber of Phase:\t"<<SimuNodes.at(0).getNum_Ent(WHICHPARA::PHSFRAC);
+    std::cout<<"\nNumber of Element:\t"<<SimuNodes.at(0).getNum_Ent(WHICHPARA::CON);
+    std::cout<<"\nNumber of CustomEntry:\t"<<SimuNodes.at(0).getNum_Ent(WHICHPARA::CUSTOM);
 
     std::cout<<"\n-----------------------------------------------------------------\n"<<std::endl;
 }
 
+// show one of the properties of the SimuNodes.at(i)s inside the mesh
 void SimulationMesh::showNodesProp(WHICHPARA which, int Index){ //which para, Index of para
     if (which == WHICHPARA::CON)std::cout<<"Concentration of "<<SimuNodes.at(0).Con_Node.Entrys.at(Index).Element<<"\n";
     if (which == WHICHPARA::PHSFRAC)std::cout<<"Order Parameter of "<<Index<<" grain\n";
     if (which == WHICHPARA::CUSTOM)std::cout<<"Custom value \n";
     for (long i = 0; i < Num_Nodes; i++){
         std::cout<<std::fixed<<std::setprecision(10)<<
-            SimuNodes.at(i).getProp(which).at(Index)
+            SimuNodes.at(i).getVal(which,Index)
             // SimuNodes.at(i).getLap(WHICHPARA::CON, Index)
             <<" ";
         if (i%MeshX==MeshX-1)std::cout<<"\n";

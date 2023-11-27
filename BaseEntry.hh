@@ -95,5 +95,10 @@ class PhaseEntry : public BaseEntry{
 
 }Def_PhsEnt;
 
+class CustEntry : public BaseEntry{
+    public:
+    using BaseEntry::BaseEntry;
+};
+
 
 #endif

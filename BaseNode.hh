@@ -18,13 +18,12 @@ class BaseNode{
     std::vector<EntryT> Entrys;
 
     /*************************************************************/
-
-    // Construct & Deconstruct Functions
+    
     BaseNode(){
         Entrys.push_back(Def_Ent);
         Num_Ent = 1;
         Entrys.at(0).Index = 0;
-    } //Accept Default Parameters
+    }
 
     BaseNode(std::vector<EntryT> EntryList){
         Entrys = EntryList;
@@ -55,8 +54,28 @@ class BaseNode{
 
     /*************************************************************/
 
+    void addEntry(int num){
+        for (int i = 0; i < num; ++i){
+            Entrys.push_back(Def_Ent);
+        }
+        Num_Ent = Entrys.size();
+        updateIndex(Num_Ent-num);
+    }
+
+    void deletEntry(int _Index){
+        if (Num_Ent <= 1) throw std::out_of_range("Last entry");
+        else if(_Index<Num_Ent && _Index >=0){
+            Entrys.erase(Entrys.begin()+_Index);
+            updateIndex(_Index);
+            return;
+        }
+        throw std::out_of_range("Not in entry list");
+    }
+
+    /*************************************************************/
+
     std::vector<double> getVal(){
-        std::vector<double> result;
+        std::vector<double> result(Num_Ent);
         for (auto ent : Entrys){
             result.push_back(ent.Val);
         }
@@ -64,7 +83,7 @@ class BaseNode{
     }
 
     std::vector<double> getLap(){
-        std::vector<double> result;
+        std::vector<double> result(Num_Ent);
         for (auto ent : Entrys){
             result.push_back(ent.Lap);
         }
@@ -72,7 +91,7 @@ class BaseNode{
     }
 
     std::vector<double> getGrad(){
-        std::vector<double> result;
+        std::vector<double> result(Num_Ent);
         for (auto ent : Entrys){
             result.push_back(ent.Grad);
         }
@@ -99,43 +118,26 @@ class BaseNode{
 
     /*************************************************************/
 
-    void addEntry(int num){
-        for (int i = 0; i < num; ++i){
-            Entrys.push_back(Def_Ent);
-        }
-        Num_Ent = Entrys.size();
-        updateIndex(Num_Ent-num);
-    }
-
-    void deletEntry(int _Index){
-        if (Num_Ent <= 1) throw std::out_of_range("Last entry");
-        else if(_Index<Num_Ent && _Index >=0){
-            Entrys.erase(Entrys.begin()+_Index);
-            updateIndex(_Index);
-            return;
-        }
-        throw std::out_of_range("Not in entry list");
-    }
-
-    void updateVal(int _Index, double &_con){
+    void updateVal(int _Index, double _con){
         if(_Index < Num_Ent && _Index >= 0)
         Entrys.at(_Index).Val = _con;
-        throw std::out_of_range("Not in entry list");
+        else throw std::out_of_range("Not in entry list");
     }
 
-    void updateLap(int _Index, double &_Lap){
+    void updateLap(int _Index, double _Lap){
         if(_Index < Num_Ent && _Index >= 0)
         Entrys.at(_Index).Lap = _Lap;
-        throw std::out_of_range("Not in entry list");
+        else throw std::out_of_range("Not in entry list");
     }
 
-    void updateGrad(int _Index, double &_Grad){
+    void updateGrad(int _Index, double _Grad){
         if(_Index < Num_Ent && _Index >= 0)
         Entrys.at(_Index).Grad = _Grad;
-        throw std::out_of_range("Not in entry list");
+        else throw std::out_of_range("Not in entry list");
     }
 
     /*************************************************************/
+
     private:
     void updateIndex(int num){
         Num_Ent = Entrys.size();
@@ -178,5 +180,10 @@ class PhaseNode : public BaseNode<PhaseEntry>{
         return result;
     }
 }Def_PhsNode;
+
+class CustNode : public BaseNode<CustEntry>{
+    public:
+    using BaseNode<CustEntry>::BaseNode;
+}Def_CustNode;
 
 #endif
