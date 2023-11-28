@@ -277,16 +277,17 @@ class SimulationMesh{
     void Laplacian(STENCILE whichSTNCL, WHICHPARA whichpara){
         double result = 0;
         int Num_Ent = SimuNodes.at(0).getNum_Ent(whichpara);
-        double c=0.0,f=0.0,b=0.0,l=0.0,r=0.0,u=0.0,d = 0.0;
         if (whichSTNCL == STENCILE::StencFIVE){
         #pragma omp parallel for collapse(2)
         for (auto &node : SimuNodes){
             for (int _Index = 0; _Index < Num_Ent; ++_Index){
-                    c = node.getVal(whichpara,_Index);
-                    f = node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,_Index);
-                    b = node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,_Index);
-                    l = node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,_Index);
-                    r = node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,_Index);
+                    double c = node.getVal(whichpara,_Index);
+                    double f = node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,_Index);
+                    double b = node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,_Index);
+                    double l = node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,_Index);
+                    double r = node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,_Index);
+                    // double u = node.getNbhd(WHICHDIR::DirU)->getVal(whichpara,_Index);
+                    // double d = node.getNbhd(WHICHDIR::DirD)->getVal(whichpara,_Index);
 
                     result = ((f+b+l+r-4*c)/(StepX*StepY*StepZ));
                     switch (whichpara)
@@ -318,17 +319,14 @@ class SimulationMesh{
     }
 
     void Gradient(WHICHPARA whichpara){
-        double resultx = 0.0;
-        double resulty = 0.0;
-        double resultz = 0.0;
         int Num_Ent = SimuNodes.at(0).getNum_Ent(whichpara);
         #pragma omp parallel for collapse(2)
         for (auto &node : SimuNodes){
             for (int _Index = 0; _Index < Num_Ent; ++_Index){
 
-                    resultx = (node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,_Index))/StepX;
-                    resulty = (node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,_Index))/StepY;
-                    resultz = (node.getNbhd(WHICHDIR::DirD)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirU)->getVal(whichpara,_Index))/StepZ;
+                    double resultx = (node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,_Index))/StepX;
+                    double resulty = (node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,_Index))/StepY;
+                    double resultz = (node.getNbhd(WHICHDIR::DirD)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirU)->getVal(whichpara,_Index))/StepZ;
 
                     switch (whichpara)
                     {
@@ -360,9 +358,9 @@ class SimulationMesh{
     }
 
     void GradientX(WHICHPARA whichpara, int _Index){
-        double resultx = 0.0;
+        #pragma omp parallel for
         for(auto &node:SimuNodes){
-            resultx = (node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,_Index))/StepX;
+            double resultx = (node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,_Index))/StepX;
             switch (whichpara){
             case WHICHPARA::CON:
                 node.Con_Node.updateGrad(DIM::DimX,_Index,resultx);
@@ -383,10 +381,9 @@ class SimulationMesh{
     }
 
     void GradientY(WHICHPARA whichpara, int _Index){
-        double resulty = 0.0;
         #pragma omp parallel for
         for (auto &node : SimuNodes){
-            resulty = (node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,_Index))/StepY;
+            double resulty = (node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,_Index))/StepY;
             switch (whichpara){
             case WHICHPARA::CON:
                 node.Con_Node.updateGrad(DIM::DimY,_Index,resulty);
@@ -406,10 +403,9 @@ class SimulationMesh{
         }
     }
     void GradientZ(WHICHPARA whichpara, int _Index){
-        double resultz = 0.0;
-        int Num_Ent = SimuNodes.at(0).getNum_Ent(whichpara);
+        #pragma omp parallel for
         for (auto &node : SimuNodes){
-            resultz = (node.getNbhd(WHICHDIR::DirD)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirU)->getVal(whichpara,_Index))/StepZ;
+            double resultz = (node.getNbhd(WHICHDIR::DirD)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirU)->getVal(whichpara,_Index))/StepZ;
             switch (whichpara){
             case WHICHPARA::CON:
                 node.Con_Node.updateGrad(DIM::DimZ,_Index,resultz);
@@ -567,10 +563,10 @@ inline void SimulationMesh::outVTKFilehead(std::string _dirname, int istep){
     // size info
     outfile<<"DIMENSIONS "<<MeshX<<"  "<<MeshY<<"  "<<MeshZ<<"\n";
     outfile<<"POINTS "<<Num_Nodes<<"   float\n";
-    for (int i = 0;i<MeshX;i++)
-        for (int j = 0;j<MeshY;j++)
+    for (int i = 0; i < MeshX;i++)
+        for (int j = 0; j < MeshY;j++)
             for (int k = 0; k < MeshZ; k++){
-                outfile<<i*StepLength.at(0)<<"   "<<j*StepLength.at(1)<<"   "<<k*StepLength.at(2)<<"\n";
+                outfile<<i*MeshX<<"   "<<j*MeshY<<"   "<<k*MeshZ<<std::endl;
             }
     outfile<<"POINT_DATA "<<Num_Nodes<<"\n";
 
@@ -597,6 +593,9 @@ inline void SimulationMesh::outVTKAve(std::string _dirname, WHICHPARA whichpara,
     case WHICHPARA::CUSTOM:
         std::sprintf(varname, "CUST_AVE");
         break;
+    case WHICHPARA::TEMP:
+        std::printf(varname, "TEMP_AVE");
+        break;
     default:
         break;
     }
@@ -604,7 +603,7 @@ inline void SimulationMesh::outVTKAve(std::string _dirname, WHICHPARA whichpara,
     outfile<<"SCALARS "<<varname<<"  float  1\n";
     outfile<<"LOOKUP_TABLE default\n";
     for (int i = 0;i<Num_Nodes;i++)
-        outfile<<normed_phs.at(i)<<"\n";
+        outfile<<normed_phs.at(i)<<std::endl;
 
     outfile.close();
 
@@ -633,10 +632,13 @@ inline void SimulationMesh::outVTKAll(std::string _dirname, WHICHPARA whichpara,
             std::sprintf(varname, "PHSFRAC_%01d", num);
             break;
         case WHICHPARA::CON:
-            std::sprintf(varname, "CON__%01d", num);
+            std::sprintf(varname, "CON_%01d", num);
             break;
         case WHICHPARA::CUSTOM:
-            std::sprintf(varname, "CUST__%01d", num);
+            std::sprintf(varname, "CUST_%01d", num);
+            break;
+        case WHICHPARA::TEMP:
+            std::sprintf(varname, "TEMP_%01d", num);
             break;
         default:
             break;
@@ -644,7 +646,9 @@ inline void SimulationMesh::outVTKAll(std::string _dirname, WHICHPARA whichpara,
         outfile<<"SCALARS "<<varname<<"  float  1\n";
         outfile<<"LOOKUP_TABLE default\n";
         for (int i = 0;i<Num_Nodes;i++)
-            outfile<<meshphs.at(num).at(i)<<"\n";
+            outfile<<meshphs.at(num).at(i)<<std::endl;
+            // outfile<<getMeshProp(whichpara,num).at(i)<<"\n";
+            // outfile<<SimuNodes.at(i).getVal(whichpara,num)<<"\n";
     }
     outfile.close();
 }

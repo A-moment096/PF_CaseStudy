@@ -61,6 +61,10 @@
         "cstring": "cpp",
         "map": "cpp",
         "codecvt": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "forward_list": "cpp",
+        "unordered_set": "cpp",
+        "cinttypes": "cpp",
+        "typeindex": "cpp"
     }
 }

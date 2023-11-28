@@ -132,14 +132,14 @@ int main(){
         mesh.Laplacian(WHICHPARA::CON);
         mesh.Laplacian(WHICHPARA::PHSFRAC);
 
-        #pragma omp parallel for
+    #pragma omp parallel for
         for (auto &node:mesh.SimuNodes){
             double c = node.Con_Node.getVal(0); // node.getVal().at(0)
             double &&dummy0 = std::move(dfdcon(c, node.sumPhsFrac3(), node.sumPhsFrac2()));
             node.Cust_Node.updateVal(0, dummy0-0.5*coefm*(node.getLap(WHICHPARA::CON, 0)));
         }
 
-        #pragma omp parallel for collapse(2)
+    #pragma omp parallel for collapse(2)
         for (auto &node:mesh.SimuNodes){
             for (int i = 0; i<PhsNum; ++i){
                 double x = node.Phs_Node.getVal(i);
@@ -157,7 +157,7 @@ int main(){
 
         double Diffu = 0;
 
-        #pragma omp parallel for
+    #pragma omp parallel for
         for (auto &node:mesh.SimuNodes){
             double sum = node.sumPhsFrac()*node.sumPhsFrac()-node.sumPhsFrac2();
             double c = node.Con_Node.getVal(0);
@@ -179,8 +179,8 @@ int main(){
             // cout<<mesh.CalDensity()<<endl;
         }
     }
-    
-    mesh.outCSV(_path,"step_density",isteps,vals);
+
+    mesh.outCSV(_path, "step_density", isteps, vals);
 
     RunTimeCounter(start);
     return 0;

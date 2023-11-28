@@ -137,6 +137,7 @@ class BaseNode{
         }
         else
             throw std::out_of_range("No Such Index");
+        return 1;
     }
 
     std::vector<double> getGrad(int _Index){
