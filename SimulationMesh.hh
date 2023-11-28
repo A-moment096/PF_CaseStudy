@@ -10,7 +10,6 @@
 #include <cstring>
 #include "MeshNode.hh"
 
-enum DIM{ DimX, DimY, DimZ };
 enum BOUNDCOND{ BndPERIODIC, BndCONST, BndADIABATIC };
 enum STENCILE{ StencFIVE = 5, StencNINE = 9 };
 
@@ -57,14 +56,14 @@ class SimulationMesh{
         if (where<Num_Nodes){
             return SimuNodes.at(where);
         }
-        else throw std::invalid_argument("Index Not in Mesh");
+        else throw std::invalid_argument("_Index Not in Mesh");
     }
 
     MeshNode &operator()(int X, int Y, int Z){
         if (X<Dimension.at(0)&&Y<Dimension.at(1)&&Z<Dimension.at(2) && !(X<0) &&!(Y<0) &&!(Z<0)){
             return SimuNodes.at(X+Y*Dimension.at(0)+Z*Dimension.at(0)*Dimension.at(1));
         }
-        else throw std::invalid_argument("Index Not in Mesh");
+        else throw std::invalid_argument("_Index Not in Mesh");
     }
 
     /*************************************************************/
@@ -186,15 +185,15 @@ class SimulationMesh{
     
     /*************************************************************/
 
-    // get value of whichpara at Index's entry
-    std::vector<double> getMeshProp(WHICHPARA whichpara, int Index){
+    // get value of whichpara at _Index's entry
+    std::vector<double> getMeshProp(WHICHPARA whichpara, int _Index){
         std::vector<double> result(Num_Nodes, 0.0);
-        if (getNum_Ent(whichpara) != 0 &&Index<getNum_Ent(whichpara))
+        if (getNum_Ent(whichpara) != 0 &&_Index<getNum_Ent(whichpara))
         #pragma omp parallel for
             for (int i = 0; i < Num_Nodes;i++){
-                result.at(i) = (SimuNodes.at(i).getVal(whichpara,Index));
+                result.at(i) = (SimuNodes.at(i).getVal(whichpara,_Index));
             }
-        else throw std::out_of_range("Index out of range");
+        else throw std::out_of_range("_Index out of range");
         return result;
     }
 
@@ -202,8 +201,8 @@ class SimulationMesh{
         std::vector<double> result;
         for (auto node : SimuNodes){
             double sum = 0;
-            for (auto val : node.getVal(whichpara)){
-                sum += val*val;
+            for (int i = 0; i < node.getNum_Ent(whichpara); i++){
+                sum += node.getVal(whichpara,i)* node.getVal(whichpara,i);
             }
             sum = sqrt(sum);
             threshold(sum, 0.0001, 0.9999);
@@ -244,32 +243,32 @@ class SimulationMesh{
 
     /*************************************************************/
 
-    void updateNodeCon(int where, int Index, double _val){
-        SimuNodes.at(where).Con_Node.updateVal(Index, _val);
+    void updateNodeCon(int where, int _Index, double _val){
+        SimuNodes.at(where).Con_Node.updateVal(_Index, _val);
     }
 
-    void updateNodeCon(std::vector<int> where, int Index, double _val){
-        updateNodeCon(transCoord(where), Index, _val);
+    void updateNodeCon(std::vector<int> where, int _Index, double _val){
+        updateNodeCon(transCoord(where), _Index, _val);
     }
 
     /*************************************************************/
 
-    void updateNodePhs(int where, int Index, double _val){
-        SimuNodes.at(where).Phs_Node.updateVal(Index, _val);
+    void updateNodePhs(int where, int _Index, double _val){
+        SimuNodes.at(where).Phs_Node.updateVal(_Index, _val);
     }
 
-    void updateNodePhs(std::vector<int> where, int Index, double _val){
-        updateNodePhs(transCoord(where), Index, _val);
+    void updateNodePhs(std::vector<int> where, int _Index, double _val){
+        updateNodePhs(transCoord(where), _Index, _val);
     }
     
     /*************************************************************/
 
-    void updateNodeTemp(int where, int Index, double _val){
-        SimuNodes.at(where).Temp_Node.updateVal(Index,_val);
+    void updateNodeTemp(int where, int _Index, double _val){
+        SimuNodes.at(where).Temp_Node.updateVal(_Index,_val);
     }
 
-    void updateNodeTemp(std::vector<int> where, int Index, double _val){
-        updateNodeTemp(transCoord(where), Index, _val);
+    void updateNodeTemp(std::vector<int> where, int _Index, double _val){
+        updateNodeTemp(transCoord(where), _Index, _val);
     }
 
     /*************************************************************/
@@ -277,26 +276,36 @@ class SimulationMesh{
     /**/
     void Laplacian(STENCILE whichSTNCL, WHICHPARA whichpara){
         double result = 0;
-        double dx = StepX;
-        double dy = StepY;
-        double dz = StepZ;
+        int Num_Ent = SimuNodes.at(0).getNum_Ent(whichpara);
+        double c=0.0,f=0.0,b=0.0,l=0.0,r=0.0,u=0.0,d = 0.0;
         if (whichSTNCL == STENCILE::StencFIVE){
         #pragma omp parallel for collapse(2)
         for (auto &node : SimuNodes){
-            for (int Index = 0; Index < SimuNodes.at(0).getNum_Ent(whichpara); ++Index){
-                    double c = node.getVal(whichpara,Index);
-                    double f = node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,Index);
-                    double b = node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,Index);
-                    double l = node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,Index);
-                    double r = node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,Index);
+            for (int _Index = 0; _Index < Num_Ent; ++_Index){
+                    c = node.getVal(whichpara,_Index);
+                    f = node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,_Index);
+                    b = node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,_Index);
+                    l = node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,_Index);
+                    r = node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,_Index);
 
-                    result = ((f+b+l+r-4*c)/(dx*dy*dz));
-                    if (whichpara == WHICHPARA::PHSFRAC)
-                        node.Phs_Node.updateLap(Index, result);
-                    if (whichpara == WHICHPARA::CON)
-                        node.Con_Node.updateLap(Index, result);
-                    if (whichpara == WHICHPARA::CUSTOM)
-                        node.Cust_Node.updateLap(Index, result);
+                    result = ((f+b+l+r-4*c)/(StepX*StepY*StepZ));
+                    switch (whichpara)
+                    {
+                    case WHICHPARA::CON:
+                        node.Con_Node.updateLap(_Index,result);
+                        break;
+                    case WHICHPARA::PHSFRAC:
+                        node.Phs_Node.updateLap(_Index,result);
+                        break;
+                    case WHICHPARA::TEMP:
+                        node.Temp_Node.updateLap(_Index,result);
+                        break;
+                    case WHICHPARA::CUSTOM:
+                        node.Cust_Node. updateLap(_Index,result);
+                        break;
+                    default:
+                        break;
+                    }
                 }
             }
         }
@@ -308,6 +317,137 @@ class SimulationMesh{
         return;
     }
 
+    void Gradient(WHICHPARA whichpara){
+        double resultx = 0.0;
+        double resulty = 0.0;
+        double resultz = 0.0;
+        int Num_Ent = SimuNodes.at(0).getNum_Ent(whichpara);
+        #pragma omp parallel for collapse(2)
+        for (auto &node : SimuNodes){
+            for (int _Index = 0; _Index < Num_Ent; ++_Index){
+
+                    resultx = (node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,_Index))/StepX;
+                    resulty = (node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,_Index))/StepY;
+                    resultz = (node.getNbhd(WHICHDIR::DirD)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirU)->getVal(whichpara,_Index))/StepZ;
+
+                    switch (whichpara)
+                    {
+                    case WHICHPARA::CON:
+                        node.Con_Node.updateGrad(DIM::DimX,_Index,resultx);
+                        node.Con_Node.updateGrad(DIM::DimY,_Index,resulty);
+                        node.Con_Node.updateGrad(DIM::DimZ,_Index,resultz);
+                        break;
+                    case WHICHPARA::PHSFRAC:
+                        node.Phs_Node.updateGrad(DIM::DimX,_Index,resultx);
+                        node.Phs_Node.updateGrad(DIM::DimY,_Index,resulty);
+                        node.Phs_Node.updateGrad(DIM::DimZ,_Index,resultz);
+                        break;
+                    case WHICHPARA::TEMP:
+                        node.Temp_Node.updateGrad(DIM::DimX,_Index,resultx);
+                        node.Temp_Node.updateGrad(DIM::DimY,_Index,resulty);
+                        node.Temp_Node.updateGrad(DIM::DimZ,_Index,resultz);
+                        break;
+                    case WHICHPARA::CUSTOM:
+                        node.Cust_Node.updateGrad(DIM::DimX,_Index,resultx);
+                        node.Cust_Node.updateGrad(DIM::DimY,_Index,resulty);
+                        node.Cust_Node.updateGrad(DIM::DimZ,_Index,resultz);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    void GradientX(WHICHPARA whichpara, int _Index){
+        double resultx = 0.0;
+        for(auto &node:SimuNodes){
+            resultx = (node.getNbhd(WHICHDIR::DirR)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirL)->getVal(whichpara,_Index))/StepX;
+            switch (whichpara){
+            case WHICHPARA::CON:
+                node.Con_Node.updateGrad(DIM::DimX,_Index,resultx);
+                break;
+            case WHICHPARA::PHSFRAC:
+                node.Phs_Node.updateGrad(DIM::DimX,_Index,resultx);
+                break;
+            case WHICHPARA::TEMP:
+                node.Temp_Node.updateGrad(DIM::DimX,_Index,resultx);
+                break;
+            case WHICHPARA::CUSTOM:
+                node.Cust_Node.updateGrad(DIM::DimX,_Index,resultx);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    void GradientY(WHICHPARA whichpara, int _Index){
+        double resulty = 0.0;
+        #pragma omp parallel for
+        for (auto &node : SimuNodes){
+            resulty = (node.getNbhd(WHICHDIR::DirB)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirF)->getVal(whichpara,_Index))/StepY;
+            switch (whichpara){
+            case WHICHPARA::CON:
+                node.Con_Node.updateGrad(DIM::DimY,_Index,resulty);
+                break;
+            case WHICHPARA::PHSFRAC:
+                node.Phs_Node.updateGrad(DIM::DimY,_Index,resulty);
+                break;
+            case WHICHPARA::TEMP:
+                node.Temp_Node.updateGrad(DIM::DimY,_Index,resulty);
+                break;
+            case WHICHPARA::CUSTOM:
+                node.Cust_Node.updateGrad(DIM::DimY,_Index,resulty);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    void GradientZ(WHICHPARA whichpara, int _Index){
+        double resultz = 0.0;
+        int Num_Ent = SimuNodes.at(0).getNum_Ent(whichpara);
+        for (auto &node : SimuNodes){
+            resultz = (node.getNbhd(WHICHDIR::DirD)->getVal(whichpara,_Index)-node.getNbhd(WHICHDIR::DirU)->getVal(whichpara,_Index))/StepZ;
+            switch (whichpara){
+            case WHICHPARA::CON:
+                node.Con_Node.updateGrad(DIM::DimZ,_Index,resultz);
+                break;
+            case WHICHPARA::PHSFRAC:
+                node.Phs_Node.updateGrad(DIM::DimZ,_Index,resultz);
+                break;
+            case WHICHPARA::TEMP:
+                node.Temp_Node.updateGrad(DIM::DimZ,_Index,resultz);
+                break;
+            case WHICHPARA::CUSTOM:
+                node.Cust_Node.updateGrad(DIM::DimZ,_Index,resultz);
+                break;
+            default:
+                break;
+            }
+        }
+    }    
+
+    void GradientX(WHICHPARA whichpara){
+        int Num_Ent = SimuNodes.at(0).getNum_Ent(whichpara);
+        for (int _Index = 0; _Index <Num_Ent; ++_Index){
+                GradientX(whichpara,_Index);
+        }
+    }
+    void GradientY(WHICHPARA whichpara){
+        int Num_Ent = SimuNodes.at(0).getNum_Ent(whichpara);
+            for (int _Index = 0; _Index < Num_Ent; ++_Index){
+                GradientY(whichpara,_Index);
+            }
+    }
+    void GradientZ(WHICHPARA whichpara){
+        int Num_Ent = SimuNodes.at(0).getNum_Ent(whichpara);
+            for (int _Index = 0; _Index < Num_Ent; ++_Index){
+                GradientZ(whichpara,_Index);
+            }
+    }
+
     double CalDensity(){
         double sum;
         for(auto node : SimuNodes)
@@ -317,7 +457,7 @@ class SimulationMesh{
     }
     /*************************************************************/
     void showGlobalInfo(); 
-    void showNodesProp(WHICHPARA which, int Index); 
+    void showNodesProp(WHICHPARA which, int _Index); 
 
     void outVTKFilehead(std::string _dirname, int istep);
     void outVTKAve(std::string _dirname, WHICHPARA whichpara, int istep);
@@ -374,14 +514,14 @@ void SimulationMesh::showGlobalInfo(){
 /**************************************************************************************************************************/
 
 // show one of the properties of the SimuNodes.at(i)s inside the mesh
-void SimulationMesh::showNodesProp(WHICHPARA which, int Index){ //which para, Index of para
-    if (which == WHICHPARA::CON)std::cout<<"Concentration of "<<SimuNodes.at(0).Con_Node.Entrys.at(Index).Element<<"\n";
-    if (which == WHICHPARA::PHSFRAC)std::cout<<"Order Parameter of "<<Index<<" grain\n";
+void SimulationMesh::showNodesProp(WHICHPARA which, int _Index){ //which para, _Index of para
+    if (which == WHICHPARA::CON)std::cout<<"Concentration of "<<SimuNodes.at(0).Con_Node.Entrys.at(_Index).Element<<"\n";
+    if (which == WHICHPARA::PHSFRAC)std::cout<<"Order Parameter of "<<_Index<<" grain\n";
     if (which == WHICHPARA::CUSTOM)std::cout<<"Custom value \n";
     for (long i = 0; i < Num_Nodes; i++){
         std::cout<<std::fixed<<std::setprecision(10)<<
-            SimuNodes.at(i).getVal(which,Index)
-            // SimuNodes.at(i).getLap(WHICHPARA::CON, Index)
+            SimuNodes.at(i).getVal(which,_Index)
+            // SimuNodes.at(i).getLap(WHICHPARA::CON, _Index)
             <<" ";
         if (i%MeshX==MeshX-1)std::cout<<"\n";
         if (i%(MeshX*MeshY) == MeshX*MeshY-1)std::cout<<"\n";

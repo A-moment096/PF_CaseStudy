@@ -150,25 +150,25 @@ class MeshNode{
         }
     }
 
-    std::vector<double> getVal(WHICHPARA whichpara){
-        switch (whichpara){
-        case WHICHPARA::CON:
-            return Con_Node.getVal();
-            break;
-        case WHICHPARA::PHSFRAC:
-            return Phs_Node.getVal();
-            break;
-        case WHICHPARA::TEMP:
-            return Temp_Node.getVal();
-            break;
-        case WHICHPARA::CUSTOM:
-            return Cust_Node.getVal();
-            break;
-        default:
-            break;
-        }
-        return {};
-    }
+    // std::vector<double> getVal(WHICHPARA whichpara){
+    //     switch (whichpara){
+    //     case WHICHPARA::CON:
+    //         return Con_Node.getVal();
+    //         break;
+    //     case WHICHPARA::PHSFRAC:
+    //         return Phs_Node.getVal();
+    //         break;
+    //     case WHICHPARA::TEMP:
+    //         return Temp_Node.getVal();
+    //         break;
+    //     case WHICHPARA::CUSTOM:
+    //         return Cust_Node.getVal();
+    //         break;
+    //     default:
+    //         break;
+    //     }
+    //     return {};
+    // }
 
     double getVal(WHICHPARA whichpara, int _Index){
         switch (whichpara){
@@ -212,7 +212,7 @@ class MeshNode{
         return {};
     }
 
-    double getGrad(int whichpara, int _Index){
+    std::vector<double> getGrad(int whichpara, int _Index){
         switch (whichpara){
         case WHICHPARA::CON:
             return Con_Node.getGrad(_Index);
@@ -233,6 +233,26 @@ class MeshNode{
         return {};
     }
 
+    double getGrad(int whichpara, int _Index, DIM whichdim){
+        switch (whichpara){
+        case WHICHPARA::CON:
+            return Con_Node.getGrad(_Index, whichdim);
+            break;
+        case WHICHPARA::PHSFRAC:
+            return Phs_Node.getGrad(_Index, whichdim);
+            break;
+        case WHICHPARA::TEMP:
+            return Temp_Node.getGrad(_Index, whichdim);
+            break;
+        case WHICHPARA::CUSTOM:
+            return Cust_Node.getGrad(_Index, whichdim);
+            break;
+
+        default:
+            break;
+        }
+        return {};
+    }
     /*************************************************************/
 
     double sumPhsFrac(){
@@ -250,6 +270,7 @@ class MeshNode{
     /*************************************************************/
 
     void showNode();
+
 }Def_Node;
 
 /*************************************************************/
