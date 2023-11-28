@@ -100,5 +100,9 @@ class CustEntry : public BaseEntry{
     using BaseEntry::BaseEntry;
 };
 
+class TempEntry : public BaseEntry{
+    public:
+    using BaseEntry::BaseEntry;    
+}Def_TempEnt;
 
 #endif

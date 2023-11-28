@@ -186,4 +186,9 @@ class CustNode : public BaseNode<CustEntry>{
     using BaseNode<CustEntry>::BaseNode;
 }Def_CustNode;
 
+class TempNode : public BaseNode<TempEntry>{
+    public:
+    using BaseNode<TempEntry>::BaseNode;
+}Def_TempNode;
+
 #endif

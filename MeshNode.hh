@@ -12,7 +12,7 @@ This is MeshNode Class, A node manager.
 Every property-node is controlled here.
 ************************************************/
 
-enum WHICHPARA{ CON, PHSFRAC, CUSTOM = 99 };
+enum WHICHPARA{ CON, PHSFRAC,TEMP, CUSTOM = 99 };
 enum WHICHDIR{ DirF, DirB, DirL, DirR, DirU, DirD };
 
 class MeshNode{
@@ -25,10 +25,10 @@ class MeshNode{
     MeshNode *Down = nullptr;
 
     public:
-    double Temperature = 298.15;
     PhaseNode Phs_Node;
     ConNode Con_Node;
     CustNode Cust_Node;
+    TempNode Temp_Node;
 
 
     /*************************************************************/
@@ -38,12 +38,14 @@ class MeshNode{
         Phs_Node = Def_PhsNode;
         Con_Node = Def_ConNode;
         Cust_Node = Def_CustNode;
+        Temp_Node = Def_TempNode;
     };
 
     MeshNode(PhaseNode _phs_node, ConNode _con_node){
         Phs_Node = _phs_node;
         Con_Node = _con_node;
         Cust_Node = Def_CustNode;
+        Temp_Node = Def_TempNode;
     }
 
     MeshNode(PhaseNode _phs_node):MeshNode(_phs_node, Def_ConNode){}
@@ -112,6 +114,10 @@ class MeshNode{
             Phs_Node.addEntry(_num);
             return;
             break;
+        case WHICHPARA::TEMP:
+            Temp_Node.addEntry(_num);
+            return;
+            break;
         case WHICHPARA::CUSTOM:
             Cust_Node.addEntry(_num);
             return;
@@ -131,6 +137,9 @@ class MeshNode{
         case WHICHPARA::PHSFRAC:
             return Phs_Node.Num_Ent;
             break;
+        case WHICHPARA::TEMP:
+            return Temp_Node.Num_Ent;
+            break;
         case WHICHPARA::CUSTOM:
             return Cust_Node.Num_Ent;
             break;
@@ -149,6 +158,9 @@ class MeshNode{
         case WHICHPARA::PHSFRAC:
             return Phs_Node.getVal();
             break;
+        case WHICHPARA::TEMP:
+            return Temp_Node.getVal();
+            break;
         case WHICHPARA::CUSTOM:
             return Cust_Node.getVal();
             break;
@@ -165,6 +177,9 @@ class MeshNode{
             break;
         case WHICHPARA::PHSFRAC:
             return Phs_Node.getVal(_Index);
+            break;
+        case WHICHPARA::TEMP:
+            return Temp_Node.getVal(_Index);
             break;
         case WHICHPARA::CUSTOM:
             return Cust_Node.getVal(_Index);
@@ -185,6 +200,9 @@ class MeshNode{
         case WHICHPARA::PHSFRAC:
             return Phs_Node.getLap(_Index);
             break;
+        case WHICHPARA::TEMP:
+            return Temp_Node.getLap(_Index);
+            break;
         case WHICHPARA::CUSTOM:
             return Cust_Node.getLap(_Index);
             break;
@@ -201,6 +219,9 @@ class MeshNode{
             break;
         case WHICHPARA::PHSFRAC:
             return Phs_Node.getGrad(_Index);
+            break;
+        case WHICHPARA::TEMP:
+            return Temp_Node.getGrad(_Index);
             break;
         case WHICHPARA::CUSTOM:
             return Cust_Node.getGrad(_Index);
@@ -234,7 +255,6 @@ class MeshNode{
 /*************************************************************/
 void MeshNode::showNode(){
     std::cout<<"Node Information:\n";
-    std::cout<<"Temperature:\t\t"<<Temperature<<"\n";
     std::cout<<"Phase Index:\tPhase Fraction:\t\tElement:\tConcentration:\n";
     for (int i = 0; i < Phs_Node.Num_Ent; i++){
         for (int j = 0; j < Con_Node.Num_Ent; j++){

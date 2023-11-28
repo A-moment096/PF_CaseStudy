@@ -153,6 +153,9 @@ class SimulationMesh{
         case WHICHPARA::PHSFRAC:
             for (auto &node : SimuNodes)node.Phs_Node.addEntry(num);
             break;
+        case WHICHPARA::TEMP:
+            for (auto &node : SimuNodes)node.Temp_Node.addEntry(num);
+            break;
         case WHICHPARA::CUSTOM:
             for (auto &node : SimuNodes)node.Cust_Node.addEntry(num);
             break;
@@ -169,6 +172,9 @@ class SimulationMesh{
             break;
         case WHICHPARA::PHSFRAC:
             for(auto &node : SimuNodes)node.Phs_Node.deletEntry(_Index);
+            break;
+        case WHICHPARA::TEMP:
+            for(auto &node : SimuNodes)node.Temp_Node.deletEntry(_Index);
             break;
         case WHICHPARA::CUSTOM:
             for(auto &node : SimuNodes)node.Cust_Node.deletEntry(_Index);
@@ -238,24 +244,33 @@ class SimulationMesh{
 
     /*************************************************************/
 
-    void updateNodeCon(int where, int Index, double _phs){
-        SimuNodes.at(where).Con_Node.updateVal(Index, _phs);
+    void updateNodeCon(int where, int Index, double _val){
+        SimuNodes.at(where).Con_Node.updateVal(Index, _val);
     }
 
-    void updateNodeCon(std::vector<int> where, int Index, double _phs){
-        updateNodeCon(transCoord(where), Index, _phs);
+    void updateNodeCon(std::vector<int> where, int Index, double _val){
+        updateNodeCon(transCoord(where), Index, _val);
     }
 
     /*************************************************************/
 
-    void updateNodePhs(int where, int Index, double _phs){
-        SimuNodes.at(where).Phs_Node.updateVal(Index, _phs);
+    void updateNodePhs(int where, int Index, double _val){
+        SimuNodes.at(where).Phs_Node.updateVal(Index, _val);
     }
 
-    void updateNodePhs(std::vector<int> where, int Index, double _phs){
-        updateNodePhs(transCoord(where), Index, _phs);
+    void updateNodePhs(std::vector<int> where, int Index, double _val){
+        updateNodePhs(transCoord(where), Index, _val);
+    }
+    
+    /*************************************************************/
+
+    void updateNodeTemp(int where, int Index, double _val){
+        SimuNodes.at(where).Temp_Node.updateVal(Index,_val);
     }
 
+    void updateNodeTemp(std::vector<int> where, int Index, double _val){
+        updateNodeTemp(transCoord(where), Index, _val);
+    }
 
     /*************************************************************/
 
