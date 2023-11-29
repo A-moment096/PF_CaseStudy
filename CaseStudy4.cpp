@@ -5,7 +5,7 @@ using std::endl;
 using std::vector;
 
 const double &&tau = 0.0003, &&epsilon_b = 0.01, &&mu = 1.0, &&kappa = 1.8;
-const double &&delta = 0.02, &&aniso = 6.0;
+const double &&delta = 0.02, &&aniso = 0.2+atan(1);
 const double &&alpha = 0.9, &&GaMMA = 10.0, &&Teq = 1.0, &&theta0 = 0.2;
 const double &&pi = 4*atan(1);
 
@@ -32,7 +32,7 @@ int main(){
     /*******************************************************************************************************/
         //Preparation
         //about file path, constants, parameters, mesh and nodes, the  
-    std::string _path(toVTK_Path("../../CS4_6Branch"));
+    std::string _path(toVTK_Path("../../CS4_3.34Branch_TEST"));
 
     MeshNode node;
     SimulationMesh mesh({ 300, 300, 1 }, { 0.030, 0.030, 1 }, std::move(node));
@@ -43,8 +43,9 @@ int main(){
     #pragma omp parallel for collapse(2)
     for (int i = 0; i<mesh.MeshX; i++){
         for (int j = 0; j<mesh.MeshY; j++){
-            if ((i-mesh.MeshX/2)*(i-mesh.MeshX/2)+(j-mesh.MeshY/2)*(j-mesh.MeshY/2)<=5.0*5.0)
-                mesh.updateNodePhs({ i, j, 0 }, 0, 1.0);
+            if ((i-mesh.MeshX/2)*(i-mesh.MeshX/2)+(j-mesh.MeshY/2)*(j-mesh.MeshY/2)<=5.0*5.0){
+                mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 0, 1.0);
+            }
         }
     }
 
@@ -53,13 +54,12 @@ int main(){
     for (int istep = 0; istep<= nstep; istep++){
         mesh.Laplacian(WHICHPARA::TEMP);
         mesh.Laplacian(WHICHPARA::PHSFRAC);
-
         mesh.Gradient(WHICHPARA::PHSFRAC);
-        double Theta = 0.0;
-        double Epsilon = 0.0;
+        
+        #pragma omp parallel for
         for (auto &node:mesh.SimuNodes){
-            Theta = atan2(node.getGrad(WHICHPARA::PHSFRAC, 0, DIM::DimY),node.getGrad(WHICHPARA::PHSFRAC, 0, DIM::DimX));
-            Epsilon = epsilon(Theta);
+            double Theta = atan2(node.getGrad(WHICHPARA::PHSFRAC, 0, DIM::DimY),node.getGrad(WHICHPARA::PHSFRAC, 0, DIM::DimX));
+            double Epsilon = epsilon(Theta);
             node.Cust_Node.updateVal(0, Epsilon);
             node.Cust_Node.updateVal(1, Epsilon*dedtheta(Theta)*node.Phs_Node.getGrad(0, DIM::DimX));
             node.Cust_Node.updateVal(2, Epsilon*dedtheta(Theta)*node.Phs_Node.getGrad(0, DIM::DimY));
@@ -68,6 +68,7 @@ int main(){
         mesh.GradientX(WHICHPARA::CUSTOM, 2);
 
         double m = 0.0;
+        #pragma omp parallel for
         for (auto &node:mesh.SimuNodes){
             m = m_cal(node.Temp_Node.getVal(0));
             double dummy1 = dfdphi(node.Phs_Node.getVal(0), std::move(m));

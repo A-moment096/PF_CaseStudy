@@ -77,46 +77,23 @@ class BaseNode{
     }
 
     /*************************************************************/
-
-    // std::vector<double> getVal(){
-    //     std::vector<double> result;
-    //     result.reserve(Num_Ent);
-    //     for (auto ent : Entrys){
-    //         result.push_back(ent.Val);
-    //     }
-    //     return result;
-    // }
-
-    // std::vector<double> getLap(){
-    //     std::vector<double> result;
-    //     result.reserve(Num_Ent);
-    //     for (auto ent : Entrys){
-    //         result.push_back(ent.Lap);
-    //     }
-    //     return result;
-    // }
-
-    // std::vector<std::vector<double>> getGrad(){
-    //     std::vector<std::vector<double>> result;
-    //     result.reserve(Num_Ent);
-    //     for (auto ent : Entrys){
-    //         result.push_back(ent.Lap);
-    //     }
-    //     return result;
-    // }
-
+    
     double getVal(int _Index){
-        if (_Index < Num_Ent)
+        if (_Index < Num_Ent){
             return Entrys.at(_Index).Val;
-        else
+        }
+        else{
             throw std::out_of_range("No Such Index");
+        }
     }
 
     double getLap(int _Index){
-        if (_Index < Num_Ent)
+        if (_Index < Num_Ent){
             return Entrys.at(_Index).Lap;
-        else
+        }
+        else{
             throw std::out_of_range("No Such Index");
+        }
     }
 
     double getGrad(int _Index, DIM whichdim){
@@ -135,8 +112,9 @@ class BaseNode{
                 break;
             }
         }
-        else
+        else{
             throw std::out_of_range("No Such Index");
+        }
         return 1;
     }
 
@@ -149,17 +127,21 @@ class BaseNode{
     /*************************************************************/
 
     void updateVal(int _Index, double _con){
-        if (_Index < Num_Ent && _Index >= 0)
+        if (_Index < Num_Ent && _Index >= 0){
             Entrys.at(_Index).Val = _con;
-        else
+        }
+        else{
             throw std::out_of_range("Not in entry list");
+        }
     }
 
     void updateLap(int _Index, double _Lap){
-        if (_Index < Num_Ent && _Index >= 0)
+        if (_Index < Num_Ent && _Index >= 0){
             Entrys.at(_Index).Lap = _Lap;
-        else
+        }
+        else{
             throw std::out_of_range("Not in entry list");
+        }
     }
 
     void updateGrad(DIM whichdim, int _Index, double _Grad){
@@ -178,15 +160,18 @@ class BaseNode{
                 break;
             }
         }
-        else
+        else{
             throw std::out_of_range("Not in entry list");
+        }
     }
 
     void updateGrad(int _Index, std::vector<double> _Grad){
-        if (_Index < Num_Ent && _Index >= 0)
+        if (_Index < Num_Ent && _Index >= 0){
             Entrys.at(_Index).Grad = _Grad;
-        else
+        }
+        else{
             throw std::out_of_range("Not in entry list");
+        }
     }
     /*************************************************************/
 

@@ -78,13 +78,6 @@ class BaseEntry{
         Grad.clear();
     }
 
-
-    /**/    bool operator== (const BaseEntry &_Entry){
-        bool result;
-        ((Val == _Entry.Val)&&(Index == _Entry.Index)) ? (result = true) : (result = false);
-        return result;
-    }
-
     /*************************************************************/
 
 

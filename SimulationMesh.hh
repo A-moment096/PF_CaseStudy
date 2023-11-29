@@ -28,19 +28,23 @@ class SimulationMesh{
 
     int Num_Nodes;
 
+    BOUNDCOND Bound_Cond;
+
     std::vector<MeshNode> SimuNodes;
 
 
     /*************************************************************/
 
-    SimulationMesh(){} // initial with default size, without SimuNodes.at(i)s
+    SimulationMesh() = delete;
 
     SimulationMesh(std::vector<int> SizeInfo, std::vector<double> StepInfo, MeshNode Node){ // initial with size and SimuNodes.at(i)s
         Dimension = SizeInfo;
         StepLength = StepInfo;
         fillNodes(Node);
         Num_Nodes = SimuNodes.size();
-        bindBoundary(BOUNDCOND::BndPERIODIC);
+        Bound_Cond = BOUNDCOND::BndPERIODIC;
+        bindNbhd();
+        bindBoundary(Bound_Cond);
     }
 
     SimulationMesh(std::vector<double> StepInfo, MeshNode Node):SimulationMesh({ 64, 64, 1 }, StepInfo, Node){}
@@ -53,29 +57,31 @@ class SimulationMesh{
     };
 
     MeshNode &operator()(const int where){
-        if (where<Num_Nodes){
-            return SimuNodes.at(where);
+
+        if (!where<Num_Nodes){
+            throw std::invalid_argument("_Index Not in Mesh");
         }
-        else throw std::invalid_argument("_Index Not in Mesh");
+        return SimuNodes.at(where);
     }
 
     MeshNode &operator()(int X, int Y, int Z){
-        if (X<Dimension.at(0)&&Y<Dimension.at(1)&&Z<Dimension.at(2) && !(X<0) &&!(Y<0) &&!(Z<0)){
-            return SimuNodes.at(X+Y*Dimension.at(0)+Z*Dimension.at(0)*Dimension.at(1));
+        if (!(X<Dimension.at(0)&&Y<Dimension.at(1)&&Z<Dimension.at(2) && !(X<0) &&!(Y<0) &&!(Z<0))){
+            throw std::invalid_argument("_Index Not in Mesh");
         }
-        else throw std::invalid_argument("_Index Not in Mesh");
+        return SimuNodes.at(X+Y*Dimension.at(0)+Z*Dimension.at(0)*Dimension.at(1));
     }
 
     /*************************************************************/
+    //Initialize tools
 
-    void fillNodes(MeshNode Nodes){ // fill mesh with SimuNodes.at(i)s 
+    void fillNodes(MeshNode Nodes){
         SimuNodes.reserve(MeshX*MeshY*MeshZ);
         for (int i = 0; i < MeshX*MeshY*MeshZ; i++){
             SimuNodes.push_back(Nodes);
         }
     }
 
-    void bindBoundary(BOUNDCOND whichBOUNDCOND){
+    void bindNbhd(){
         for (int i = 0; i < Num_Nodes; i++){
             SimuNodes.at(i).setNbhd(WHICHDIR::DirF, (i-MeshY < 0                ? &(SimuNodes.at(i)) : &(SimuNodes.at(i-MeshY))));
             SimuNodes.at(i).setNbhd(WHICHDIR::DirB, (i+MeshY >= Num_Nodes       ? &(SimuNodes.at(i)) : &(SimuNodes.at(i+MeshY))));
@@ -83,7 +89,11 @@ class SimulationMesh{
             SimuNodes.at(i).setNbhd(WHICHDIR::DirR, (i+1 >= Num_Nodes           ? &(SimuNodes.at(i)) : &(SimuNodes.at(i+1))));
             SimuNodes.at(i).setNbhd(WHICHDIR::DirU, (i-MeshX*MeshY < 0          ? &(SimuNodes.at(i)) : &(SimuNodes.at(i-MeshX*MeshY))));
             SimuNodes.at(i).setNbhd(WHICHDIR::DirD, (i+MeshX*MeshY >= Num_Nodes ? &(SimuNodes.at(i)) : &(SimuNodes.at(i+MeshX*MeshY))));
+        }
+    }
 
+    void bindBoundary(BOUNDCOND whichBOUNDCOND){
+        for (int i = 0; i < Num_Nodes; i++){
             if (whichBOUNDCOND == BOUNDCOND::BndPERIODIC){
                 //forward
                 if ((i%(MeshX*MeshY))>=0 && (i%(MeshX*MeshY))<MeshX){
@@ -101,17 +111,17 @@ class SimulationMesh{
                 if (i%MeshX == (MeshX-1)){
                     SimuNodes.at(i).setNbhd(WHICHDIR::DirR, &(SimuNodes.at(i-(MeshX-1))));
                 }
-                //down
+                //up
                 if (i>=0 && i<MeshX*MeshY){
                     SimuNodes.at(i).setNbhd(WHICHDIR::DirU, &(SimuNodes.at(i+MeshX*MeshY*(MeshZ-1))));
                 }
-                //up
+                //down
                 if (i>=MeshX*MeshY*(MeshZ-1) && i<MeshX*MeshY*MeshZ){
                     SimuNodes.at(i).setNbhd(WHICHDIR::DirD, &(SimuNodes.at(i-MeshX*MeshY*(MeshZ-1))));
                 }
             }
 
-            if (whichBOUNDCOND == BOUNDCOND::BndCONST){
+            if (whichBOUNDCOND == BOUNDCOND::BndCONST || whichBOUNDCOND == BOUNDCOND::BndADIABATIC){
                 //forward
                 if ((i%(MeshX*MeshY))>=0 && (i%(MeshX*MeshY))<MeshX){
                     SimuNodes.at(i).setNbhd(WHICHDIR::DirF, &SimuNodes.at(i));
@@ -137,8 +147,39 @@ class SimulationMesh{
                     SimuNodes.at(i).setNbhd(WHICHDIR::DirD, &SimuNodes.at(i));
                 }
             }
-            
-            if(whichBOUNDCOND == BOUNDCOND::BndADIABATIC){}
+        }
+    }
+
+    void ConstBondInit(WHICHPARA whichpara,std::vector<double> _val){
+        if(Bound_Cond == BOUNDCOND::BndCONST){
+            for(int num = 0; num < getNum_Ent(whichpara); num++){
+                for (int i = 0; i < Num_Nodes; i++){
+                    //forward
+                    if ((i%(MeshX*MeshY))>=0 && (i%(MeshX*MeshY))<MeshX){
+                        updateNodeVal(whichpara,i,num,_val.at(0));
+                    }
+                    //backward
+                    if ((i%(MeshX*MeshY))>=MeshX*(MeshY-1) && (i%(MeshX*MeshY))<MeshX*MeshY){
+                        updateNodeVal(whichpara,i,num,_val.at(1));
+                    }
+                    //left
+                    if (i%MeshX == 0){
+                        updateNodeVal(whichpara,i,num,_val.at(2));
+                    }
+                    //right
+                    if (i%MeshX == (MeshX-1)){
+                        updateNodeVal(whichpara,i,num,_val.at(3));
+                    }
+                    //up
+                    if (i>=0 && i<MeshX*MeshY){
+                        updateNodeVal(whichpara,i,num,_val.at(4));
+                    }
+                    //down
+                    if (i>=MeshX*MeshY*(MeshZ-1) && i<MeshX*MeshY*MeshZ){
+                        updateNodeVal(whichpara,i,num,_val.at(5));
+                    }
+                }
+            }
         }
     }
 
@@ -243,32 +284,29 @@ class SimulationMesh{
 
     /*************************************************************/
 
-    void updateNodeCon(int where, int _Index, double _val){
-        SimuNodes.at(where).Con_Node.updateVal(_Index, _val);
+    void updateNodeVal(WHICHPARA whichpara, int where, int _Index, double _val){
+        switch (whichpara)
+        {
+        case WHICHPARA::CON:
+            SimuNodes.at(where).Con_Node.updateVal(_Index,_val);
+            break;
+        case WHICHPARA::PHSFRAC:
+            SimuNodes.at(where).Phs_Node.updateVal(_Index,_val);
+            break;
+        case WHICHPARA::TEMP:
+            SimuNodes.at(where).Temp_Node.updateVal(_Index,_val);
+            break;
+        case WHICHPARA::CUSTOM:
+            SimuNodes.at(where).Cust_Node.updateVal(_Index,_val);
+            break;
+        default:
+            throw std::invalid_argument("No such para");
+            break;
+        }
     }
 
-    void updateNodeCon(std::vector<int> where, int _Index, double _val){
-        updateNodeCon(transCoord(where), _Index, _val);
-    }
-
-    /*************************************************************/
-
-    void updateNodePhs(int where, int _Index, double _val){
-        SimuNodes.at(where).Phs_Node.updateVal(_Index, _val);
-    }
-
-    void updateNodePhs(std::vector<int> where, int _Index, double _val){
-        updateNodePhs(transCoord(where), _Index, _val);
-    }
-    
-    /*************************************************************/
-
-    void updateNodeTemp(int where, int _Index, double _val){
-        SimuNodes.at(where).Temp_Node.updateVal(_Index,_val);
-    }
-
-    void updateNodeTemp(std::vector<int> where, int _Index, double _val){
-        updateNodeTemp(transCoord(where), _Index, _val);
+    void updateNodeVal(WHICHPARA whichpara, std::vector<int> where, int _Index, double _val){
+        updateNodeVal(whichpara,transCoord(where), _Index, _val);
     }
 
     /*************************************************************/
@@ -491,6 +529,12 @@ class SimulationMesh{
 
 };
 
+
+/**************************************************************************************************************************/
+/**************************************************************************************************************************/
+/**************************************************************************************************************************/
+
+
 // show the basic information of the mesh
 void SimulationMesh::showGlobalInfo(){
     std::cout<<"SimulationMesh Properties:\n";
@@ -504,10 +548,6 @@ void SimulationMesh::showGlobalInfo(){
 
     std::cout<<"\n-----------------------------------------------------------------\n"<<std::endl;
 }
-
-/**************************************************************************************************************************/
-/**************************************************************************************************************************/
-/**************************************************************************************************************************/
 
 // show one of the properties of the SimuNodes.at(i)s inside the mesh
 void SimulationMesh::showNodesProp(WHICHPARA which, int _Index){ //which para, _Index of para
@@ -620,12 +660,6 @@ inline void SimulationMesh::outVTKAll(std::string _dirname, WHICHPARA whichpara,
 
     char varname[64];
 
-    std::vector<std::vector<double>> meshphs;
-    meshphs.reserve(getNum_Ent(whichpara));
-    for (int num = 0; num < getNum_Ent(whichpara); num++){
-        meshphs.push_back(getMeshProp(whichpara, num));
-    }
-
     for (int num = 0; num < getNum_Ent(whichpara); num++){
         switch (whichpara){
         case WHICHPARA::PHSFRAC:
@@ -646,9 +680,7 @@ inline void SimulationMesh::outVTKAll(std::string _dirname, WHICHPARA whichpara,
         outfile<<"SCALARS "<<varname<<"  float  1\n";
         outfile<<"LOOKUP_TABLE default\n";
         for (int i = 0;i<Num_Nodes;i++)
-            outfile<<meshphs.at(num).at(i)<<std::endl;
-            // outfile<<getMeshProp(whichpara,num).at(i)<<"\n";
-            // outfile<<SimuNodes.at(i).getVal(whichpara,num)<<"\n";
+            outfile<<SimuNodes.at(i).getVal(whichpara,num)<<"\n";
     }
     outfile.close();
 }

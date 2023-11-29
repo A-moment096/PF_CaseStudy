@@ -50,13 +50,13 @@ int main(){
                 double &&dis1 = ((i-Px)*(i-Px)+(j-Py1)*(j-Py1));
                 double &&dis2 = ((i-Px)*(i-Px)+(j-Py2)*(j-Py2));
                 if (dis1<=rad1*rad1){
-                    mesh.updateNodeCon({ i, j, 0 }, 0, 0.9999);
-                    mesh.updateNodePhs({ i, j, 0 }, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 0, 0.9999);
                 }
                 if (dis2<=rad2*rad2){
-                    mesh.updateNodeCon({ i, j, 0 }, 0, 0.9999);
-                    mesh.updateNodePhs({ i, j, 0 }, 0, 0);
-                    mesh.updateNodePhs({ i, j, 0 }, 1, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 0, 0);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 1, 0.9999);
                 }
             }
         }
@@ -71,12 +71,12 @@ int main(){
             for (int j = 0; j<mesh.MeshY; j++){
                 double &&dis = ((i-Px)*(i-Px)+(j-Py)*(j-Py));
                 if (dis>=rad1*rad1&&i>=Px){
-                    mesh.updateNodeCon({ i, j, 0 }, 0, 0.9999);
-                    mesh.updateNodePhs({ i, j, 0 }, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 0, 0.9999);
                 }
                 if (dis>=rad1*rad1&&i<=Px){
-                    mesh.updateNodeCon({ i, j, 0 }, 0, 0.9999);
-                    mesh.updateNodePhs({ i, j, 0 }, 1, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 1, 0.9999);
                 }
             }
         }
@@ -113,14 +113,14 @@ int main(){
                     double dis = (i-particleCoord.at(2*coord))*(i-particleCoord.at(2*coord))+(j-particleCoord.at(2*coord+1))*(j-particleCoord.at(2*coord+1));
                     if (coord<5){
                         if (dis<=rad1*rad1){
-                            mesh.updateNodeCon({ i, j, 0 }, 0, 0.9999);
-                            mesh.updateNodePhs({ i, j, 0 }, coord, 0.9999);
+                            mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
+                            mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, coord, 0.9999);
                         }
                     }
                     else{
                         if (dis<=rad2*rad2){
-                            mesh.updateNodeCon({ i, j, 0 }, 0, 0.9999);
-                            mesh.updateNodePhs({ i, j, 0 }, coord, 0.9999);
+                            mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
+                            mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, coord, 0.9999);
                         }
                     }
                 }

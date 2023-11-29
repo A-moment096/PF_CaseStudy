@@ -98,6 +98,7 @@ class MeshNode{
         case DirD: return Down;
             break;
         default:
+            throw std::invalid_argument("No such Para");
             return nullptr;
             break;
         }
@@ -123,7 +124,7 @@ class MeshNode{
             return;
             break;
         default:
-            throw std::invalid_argument("No such element");
+            throw std::invalid_argument("No such Para");
             return;
             break;
         }
@@ -144,32 +145,12 @@ class MeshNode{
             return Cust_Node.Num_Ent;
             break;
         default:
-            throw std::invalid_argument("No such element");
-            return 0;
+            throw std::invalid_argument("No such Para");
+            return 1;
             break;
         }
     }
-
-    // std::vector<double> getVal(WHICHPARA whichpara){
-    //     switch (whichpara){
-    //     case WHICHPARA::CON:
-    //         return Con_Node.getVal();
-    //         break;
-    //     case WHICHPARA::PHSFRAC:
-    //         return Phs_Node.getVal();
-    //         break;
-    //     case WHICHPARA::TEMP:
-    //         return Temp_Node.getVal();
-    //         break;
-    //     case WHICHPARA::CUSTOM:
-    //         return Cust_Node.getVal();
-    //         break;
-    //     default:
-    //         break;
-    //     }
-    //     return {};
-    // }
-
+    
     double getVal(WHICHPARA whichpara, int _Index){
         switch (whichpara){
         case WHICHPARA::CON:
@@ -207,9 +188,11 @@ class MeshNode{
             return Cust_Node.getLap(_Index);
             break;
         default:
+            throw std::invalid_argument("No such Para or Index");
+            return 1;
             break;
         }
-        return {};
+        return 1;
     }
 
     std::vector<double> getGrad(int whichpara, int _Index){
@@ -226,8 +209,9 @@ class MeshNode{
         case WHICHPARA::CUSTOM:
             return Cust_Node.getGrad(_Index);
             break;
-
         default:
+            throw std::invalid_argument("No such Para or Index");
+            return {};
             break;
         }
         return {};
@@ -247,8 +231,9 @@ class MeshNode{
         case WHICHPARA::CUSTOM:
             return Cust_Node.getGrad(_Index, whichdim);
             break;
-
         default:
+            throw std::invalid_argument("No such Para or Index");
+            return 1;
             break;
         }
         return {};
