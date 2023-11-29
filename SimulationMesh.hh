@@ -26,6 +26,8 @@ class SimulationMesh{
     double &StepY = StepLength.at(1);
     double &StepZ = StepLength.at(2);
 
+    double TimeStep ;
+
     int Num_Nodes;
 
     BOUNDCOND Bound_Cond;
@@ -37,9 +39,10 @@ class SimulationMesh{
 
     SimulationMesh() = delete;
 
-    SimulationMesh(std::vector<int> SizeInfo, std::vector<double> StepInfo, MeshNode Node){ // initial with size and SimuNodes.at(i)s
+    SimulationMesh(std::vector<int> SizeInfo, std::vector<double> StepInfo, double _TimeStep, MeshNode Node){ // initial with size and SimuNodes.at(i)s
         Dimension = SizeInfo;
         StepLength = StepInfo;
+        TimeStep = _TimeStep;
         fillNodes(Node);
         Num_Nodes = SimuNodes.size();
         Bound_Cond = BOUNDCOND::BndPERIODIC;
@@ -47,8 +50,8 @@ class SimulationMesh{
         bindBoundary(Bound_Cond);
     }
 
-    SimulationMesh(std::vector<double> StepInfo, MeshNode Node):SimulationMesh({ 64, 64, 1 }, StepInfo, Node){}
-    SimulationMesh(MeshNode Node):SimulationMesh({ 1, 1, 1 }, Node){} // initial with SimuNodes.at(i)s and default size
+    // SimulationMesh(std::vector<double> StepInfo, MeshNode Node, double _TimeStep):SimulationMesh({ 64, 64, 1 }, StepInfo, _TimeStep , Node){}
+    // SimulationMesh(MeshNode Node):SimulationMesh({ 1, 1, 1 },  ,Node){} // initial with SimuNodes.at(i)s and default size
 
     ~SimulationMesh(){
         Dimension.clear();
@@ -58,7 +61,7 @@ class SimulationMesh{
 
     MeshNode &operator()(const int where){
 
-        if (!where<Num_Nodes){
+        if (!(where<Num_Nodes)){
             throw std::invalid_argument("_Index Not in Mesh");
         }
         return SimuNodes.at(where);
@@ -224,6 +227,10 @@ class SimulationMesh{
         }
     }
     
+    void setTimeStep(double _TimeStep){
+        TimeStep = _TimeStep;
+    }
+
     /*************************************************************/
 
     // get value of whichpara at _Index's entry
@@ -245,7 +252,6 @@ class SimulationMesh{
             for (int i = 0; i < node.getNum_Ent(whichpara); i++){
                 sum += node.getVal(whichpara,i)* node.getVal(whichpara,i);
             }
-            sum = sqrt(sum);
             threshold(sum, 0.0001, 0.9999);
             result.push_back(sum);
         }
@@ -253,11 +259,22 @@ class SimulationMesh{
     }
 
     /*************************************************************/
-
-    void threshold(double &val, double min, double max){
-        val>max ? val = max : (val<min ? val = min : val = val);
+    
+    double threshold(double &val, double min, double max){
+        return val>max ? val = max : (val<min ? val = min : val = val);
+    }
+    
+    double threshold(double &&val, double min, double max){
+        return val>max ? val = max : (val<min ? val = min : val = val);
     }
 
+    double threshold(double &val){
+        return val>0.999999 ? val = 0.999999 : (val<0.000001 ? val = 0.000001 : val = val);
+    }
+
+    double threshold(double &&val){
+        return val>0.999999 ? val = 0.999999 : (val<0.000001 ? val = 0.000001 : val = val);
+    }
 
     std::vector<int> transCoord(int where){
         if (where<Num_Nodes){
@@ -309,6 +326,11 @@ class SimulationMesh{
         updateNodeVal(whichpara,transCoord(where), _Index, _val);
     }
 
+    void iterateVal(WHICHPARA whichpara){
+        for(auto &node : SimuNodes){
+            node.iterateVal(whichpara,TimeStep);
+        }
+    }
     /*************************************************************/
 
     /**/

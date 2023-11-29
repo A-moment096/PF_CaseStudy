@@ -150,7 +150,7 @@ class MeshNode{
             break;
         }
     }
-    
+
     double getVal(WHICHPARA whichpara, int _Index){
         switch (whichpara){
         case WHICHPARA::CON:
@@ -237,6 +237,32 @@ class MeshNode{
             break;
         }
         return {};
+    }
+
+    void iterateVal(WHICHPARA whichpara,double dtime){
+        switch (whichpara){
+        case WHICHPARA::CON:
+            Con_Node.iterateVal(dtime);
+            return ;
+            break;
+        case WHICHPARA::PHSFRAC:
+            Phs_Node.iterateVal(dtime);
+            return ;
+            break;
+        case WHICHPARA::TEMP:
+            Temp_Node.iterateVal(dtime);
+            return ;
+            break;
+        case WHICHPARA::CUSTOM:
+            Cust_Node.iterateVal(dtime);
+            return ;
+            break;
+        default:
+            throw std::invalid_argument("No such Para or Index");
+            return ;
+            break;
+        }
+        return ;
     }
     /*************************************************************/
 

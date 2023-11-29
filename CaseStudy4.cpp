@@ -31,11 +31,11 @@ int main(){
 
     /*******************************************************************************************************/
         //Preparation
-        //about file path, constants, parameters, mesh and nodes, the  
+        //about file path, constants, parameters, mesh and nodes, the
     std::string _path(toVTK_Path("../../CS4_3.34Branch_TEST"));
 
     MeshNode node;
-    SimulationMesh mesh({ 300, 300, 1 }, { 0.030, 0.030, 1 }, std::move(node));
+    SimulationMesh mesh({ 300, 300, 1 }, { 0.030, 0.030, 1 },1.0e-4 ,std::move(node));
     mesh.addEntry(WHICHPARA::CUSTOM, 2);
     cout<<"ready"<<endl;
 

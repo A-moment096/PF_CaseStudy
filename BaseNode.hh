@@ -77,7 +77,7 @@ class BaseNode{
     }
 
     /*************************************************************/
-    
+
     double getVal(int _Index){
         if (_Index < Num_Ent){
             return Entrys.at(_Index).Val;
@@ -122,8 +122,19 @@ class BaseNode{
         if (_Index < Num_Ent){
             return Entrys.at(_Index).Grad;
         }
+        else{
+            throw std::out_of_range("No Such Index");
+        }
     }
 
+    double getDVal(int _Index){
+        if (_Index < Num_Ent){
+            return Entrys.at(_Index).DVal;
+        }
+        else{
+            throw std::out_of_range("No Such Index");
+        }
+    }
     /*************************************************************/
 
     void updateVal(int _Index, double _con){
@@ -173,6 +184,22 @@ class BaseNode{
             throw std::out_of_range("Not in entry list");
         }
     }
+
+    void updateDVal(int _Index, double _DVal){
+        if (_Index < Num_Ent && _Index >= 0){
+            Entrys.at(_Index).DVal = _DVal;
+        }
+        else{
+            throw std::out_of_range("Not in entry list");
+        }
+    }
+
+    void iterateVal(double dtime)noexcept(true){
+        for(auto &ent: Entrys){
+            ent.Val += dtime * ent.DVal;
+        }
+    }
+
     /*************************************************************/
 
     private:

@@ -27,7 +27,7 @@ int main(){
     std::string _path(toVTK_Path("../../NineGrainSint1"));
 
     MeshNode node(PhaseNode(std::vector<PhaseEntry>(2, Def_PhsEnt)), Def_ConNode);
-    SimulationMesh mesh({ 100, 100, 1 }, { 0.5, 0.5, 1 }, node);
+    SimulationMesh mesh({ 100, 100, 1 }, { 0.5, 0.5, 1 }, 1e-4 ,node);
 
     const double &&Dvol = 0.040, &&Dvap = 0.002, &&Dsurf = 16.0, &&Dgb = 8, &&coefm = 5.0, &&coefk = 2.0, &&coefl = 5.0;
 

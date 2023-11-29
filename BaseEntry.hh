@@ -44,10 +44,13 @@ class BaseEntry{
     int Index = 0;
     double Val = 0;
     double Lap = 0;
+
     std::vector<double> Grad{0.0,0.0,0.0};
     double &GradX = Grad.at(0);
     double &GradY = Grad.at(1);
     double &GradZ = Grad.at(2);
+
+    double DVal = 0;
 
     /*************************************************************/
 
@@ -56,21 +59,23 @@ class BaseEntry{
     BaseEntry(double _val):Index(0), Val(_val){}
 
     BaseEntry(const BaseEntry &_Entry){
-        Val = _Entry.Val;
         Index = _Entry.Index;
+        Val = _Entry.Val;
         Lap = _Entry.Lap;
         GradX = _Entry.GradX;
         GradY = _Entry.GradY;
         GradZ = _Entry.GradZ;
+        DVal = _Entry.DVal;
     }
 
     BaseEntry &operator= (const BaseEntry &_Entry){
-        Val = _Entry.Val;
         Index = _Entry.Index;
+        Val = _Entry.Val;
         Lap = _Entry.Lap;
         GradX = _Entry.GradX;
         GradY = _Entry.GradY;
         GradZ = _Entry.GradZ;
+        DVal = _Entry.DVal;
         return *this;
     }
 
