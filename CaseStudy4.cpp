@@ -76,7 +76,7 @@ int main(){
             double dummy3 = dummy1+dummy2+node.Cust_Node.getVal(0)*node.Cust_Node.getVal(0)*node.getLap(WHICHPARA::PHSFRAC, 0);
             dummy3 /= tau;
             double dummy4 = dummy3*dtime+node.Phs_Node.getVal(0);
-            mesh.threshold(dummy4,0.00001,0.99999);
+            PFMTools::threshold(dummy4,0.00001,0.99999);
             node.Phs_Node.updateVal(0,dummy4);
             node.Temp_Node.updateVal(0, (dummy3*kappa+node.Temp_Node.getLap(0))*dtime+node.Temp_Node.getVal(0));
         }
@@ -85,11 +85,11 @@ int main(){
             mesh.outVTKAll(_path, WHICHPARA::PHSFRAC, istep);
             mesh.outVTKAll(_path, WHICHPARA::TEMP, istep);
             cout<<"Done Step: "<<istep;
-            RunTimeCounter(start);
+            PFMTools::RunTimeCounter(start);
         }
     }
 
-    RunTimeCounter(start);
+    PFMTools::RunTimeCounter(start);
 
     return 0;
 }

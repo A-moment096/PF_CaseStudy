@@ -253,7 +253,7 @@ class SimulationMesh{
             for (int i = 0; i < node.getNum_Ent(whichpara); i++){
                 sum += node.getVal(whichpara,i)* node.getVal(whichpara,i);
             }
-            PFMTools::threshold(sum, 0.0001, 0.9999);
+            PFMTools::threshold(sum);
             result.push_back(sum);
         }
         return result;
@@ -283,6 +283,46 @@ class SimulationMesh{
 
     int getNum_Ent(WHICHPARA which){
         return SimuNodes.at(0).getNum_Ent(which);
+    }
+
+    /*************************************************************/
+    //! These methods is 2D only!//
+
+    bool generateDisk(WHICHPARA whichpara,std::vector<int> coord, int index, double Radius){
+        bool flag = true;
+        const int minX=(((coord.at(0)-Radius)<0)?(flag = false):(coord.at(0)-Radius));
+        const int minY=(((coord.at(1)-Radius)<0)?(flag = false):(coord.at(1)-Radius));
+        const int maxX=(((coord.at(0)+Radius)>=MeshX)?(flag = false):(coord.at(0)+Radius));
+        const int maxY=(((coord.at(1)+Radius)>=MeshY)?(flag = false):(coord.at(1)+Radius));
+        if(flag == false){return flag;}
+        for(int i = minX; i <maxX; i++){
+            for(int j = minY; j<maxY; j++){
+                if((i-coord.at(0))*(i-coord.at(0))+(j-coord.at(1))*(j-coord.at(1))< Radius*Radius){
+                    updateNodeVal(whichpara,{i,j,0},index,1);
+                }
+            }
+        }
+        std::cout<<"one disk generated, index: "<<index<<"\n";
+        return flag;
+    }
+
+    bool isOverlap(WHICHPARA whichpara,std::vector<int> newCoord, double Radius, double tolerance){
+        int flag=0;
+        std::vector<double> testedVal (getUni_Prop(whichpara));
+        for(int i = (newCoord.at(0)-Radius-1<0?0:newCoord.at(0)-Radius-1); i < (newCoord.at(0)+Radius+1>=MeshX?MeshX:newCoord.at(0)+Radius+1); i++){
+            for(int j = (newCoord.at(1)-Radius-1<0?0:newCoord.at(1)-Radius-1); j<(newCoord.at(1)+Radius+1>=MeshY?MeshY:newCoord.at(1)+Radius+1); j++){
+                if((i-newCoord.at(0))*(i-newCoord.at(0))+(j-newCoord.at(1))*(j-newCoord.at(1))<= (Radius-tolerance)*(Radius-tolerance)){
+                    if(testedVal.at(transCoord({i,j,0}))>0.00001){flag++;}
+                }
+            }
+        }
+        testedVal.clear();
+        if(flag != 0){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     /*************************************************************/
@@ -513,26 +553,27 @@ class SimulationMesh{
 
     void outCSV(std::string _dirname, std::string _filename,int istep,double _val){
 
-    std::string filename(_dirname+"/"+_filename+".csv");
-    
-    std::ofstream outfile;
-    outfile.open(filename, std::ios::app);
+        std::string filename(_dirname+"/"+_filename+".csv");
+        
+        std::ofstream outfile;
+        outfile.open(filename, std::ios::app);
 
-    outfile<<istep<<","<<_val<<"\n";
+        outfile<<istep<<","<<_val<<std::endl;
 
-    outfile.close();
+        outfile.close();
     }
 
-    void outCSV(std::string _dirname, std::string _filename,std::vector<int> isteps,std::vector<double> _vals){
+    template <typename T>
+    void outCSV(std::string _dirname, std::string _filename,std::vector<T> _FirstVals,std::vector<T> _SecondVals){
 
-    std::string filename(_dirname+"/"+_filename+".csv");
-    std::ofstream outfile;
-    outfile.open(filename);
-    for(int i = 0; i < (int) isteps.size(); i++){
-        outfile<<isteps.at(i)<<","<<_vals.at(i)<<"\n";
-    }
-
-    outfile.close();
+        std::string filename(_dirname+"/"+_filename+".csv");
+        std::ofstream outfile;
+        outfile.open(filename);
+        for(int i = 0; i < (int) _FirstVals.size(); i++){
+            outfile<<_FirstVals.at(i)<<","<<_SecondVals.at(i)<<"\n";
+        }
+        outfile.flush();
+        outfile.close();
     }
 
 };
