@@ -9,6 +9,7 @@
 #include <string>
 #include <cstring>
 #include "MeshNode.hh"
+#include "PFMTools.hh"
 
 enum BOUNDCOND{ BndPERIODIC, BndCONST, BndADIABATIC };
 enum STENCILE{ StencFIVE = 5, StencNINE = 9 };
@@ -252,7 +253,7 @@ class SimulationMesh{
             for (int i = 0; i < node.getNum_Ent(whichpara); i++){
                 sum += node.getVal(whichpara,i)* node.getVal(whichpara,i);
             }
-            threshold(sum, 0.0001, 0.9999);
+            PFMTools::threshold(sum, 0.0001, 0.9999);
             result.push_back(sum);
         }
         return result;
@@ -260,21 +261,6 @@ class SimulationMesh{
 
     /*************************************************************/
     
-    double threshold(double &val, double min, double max){
-        return val>max ? val = max : (val<min ? val = min : val = val);
-    }
-    
-    double threshold(double &&val, double min, double max){
-        return val>max ? val = max : (val<min ? val = min : val = val);
-    }
-
-    double threshold(double &val){
-        return val>0.999999 ? val = 0.999999 : (val<0.000001 ? val = 0.000001 : val = val);
-    }
-
-    double threshold(double &&val){
-        return val>0.999999 ? val = 0.999999 : (val<0.000001 ? val = 0.000001 : val = val);
-    }
 
     std::vector<int> transCoord(int where){
         if (where<Num_Nodes){
@@ -628,10 +614,11 @@ inline void SimulationMesh::outVTKFilehead(std::string _dirname, int istep){
     for (int i = 0; i < MeshX;i++)
         for (int j = 0; j < MeshY;j++)
             for (int k = 0; k < MeshZ; k++){
-                outfile<<i*MeshX<<"   "<<j*MeshY<<"   "<<k*MeshZ<<std::endl;
+                outfile<<i*StepX<<"   "<<j*StepY<<"   "<<k*StepZ<<"\n";
             }
     outfile<<"POINT_DATA "<<Num_Nodes<<"\n";
 
+    outfile.flush();
     outfile.close();
 }
 
@@ -664,8 +651,15 @@ inline void SimulationMesh::outVTKAve(std::string _dirname, WHICHPARA whichpara,
     std::vector<double> normed_phs(getUni_Prop(whichpara));
     outfile<<"SCALARS "<<varname<<"  float  1\n";
     outfile<<"LOOKUP_TABLE default\n";
-    for (int i = 0;i<Num_Nodes;i++)
-        outfile<<normed_phs.at(i)<<std::endl;
+    for (int i = 0;i<Num_Nodes;i++){
+        if(!std::isnan(normed_phs.at(i))){
+            outfile<<normed_phs.at(i)<<"\n";
+        }
+        else{
+            throw std::invalid_argument("output is nan");
+        }
+    }
+    outfile.flush();
 
     outfile.close();
 
@@ -701,9 +695,16 @@ inline void SimulationMesh::outVTKAll(std::string _dirname, WHICHPARA whichpara,
         }
         outfile<<"SCALARS "<<varname<<"  float  1\n";
         outfile<<"LOOKUP_TABLE default\n";
-        for (int i = 0;i<Num_Nodes;i++)
-            outfile<<SimuNodes.at(i).getVal(whichpara,num)<<"\n";
+        for (int i = 0;i<Num_Nodes;i++){
+            if(!std::isnan(SimuNodes.at(i).getVal(whichpara,num))){
+                outfile<<SimuNodes.at(i).getVal(whichpara,num)<<"\n";
+            }
+        else{
+            throw std::invalid_argument("output is nan");
+        }
     }
+    }
+    outfile.flush();
     outfile.close();
 }
 

@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "BaseEntry.hh"
+#include "PFMTools.hh"
 
 enum DIM{ DimX, DimY, DimZ };
 
@@ -196,7 +197,7 @@ class BaseNode{
 
     void iterateVal(double dtime)noexcept(true){
         for(auto &ent: Entrys){
-            ent.Val += dtime * ent.DVal;
+            ent.Val = PFMTools::threshold(ent.Val + dtime * ent.DVal);
         }
     }
 
