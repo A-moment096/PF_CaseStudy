@@ -51,9 +51,13 @@ int main(){
         }
     }
 
-    for (int istep = 0; istep<=nstep; istep++){
-        if(istep>= 500){mesh.setTimeStep(1.0e-2);}
+    auto dur = std::chrono::high_resolution_clock::now();
 
+    for (int istep = 0; istep<=nstep; istep++){
+        if(istep == 500){mesh.setTimeStep(1.0e-2);}
+        cout<<"During this loop";
+        RunTimeCounter(dur);
+        dur = std::chrono::high_resolution_clock::now();
         mesh.Laplacian(WHICHPARA::PHSFRAC);
         mesh.Gradient(WHICHPARA::PHSFRAC);
 
