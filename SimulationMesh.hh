@@ -253,6 +253,7 @@ class SimulationMesh{
             for (int i = 0; i < node.getNum_Ent(whichpara); i++){
                 sum += node.getVal(whichpara,i)* node.getVal(whichpara,i);
             }
+            sum = sqrt(sum);
             PFMTools::threshold(sum);
             result.push_back(sum);
         }
@@ -297,11 +298,7 @@ class SimulationMesh{
         if(flag == false){return flag;}
         for(int i = minX; i <maxX; i++){
             for(int j = minY; j<maxY; j++){
-                const int a = coord.at(0)+rand()%3-1;
-                const int b = coord.at(0)+rand()%3-1;
-                const int c = coord.at(1)+rand()%3-1;
-                const int d = coord.at(1)+rand()%3-1;
-                if((i-a)*(i-b)+(j-c)*(j-d)< Radius*Radius){
+                if((i-coord.at(0))*(i-coord.at(0))+(j-coord.at(1))*(j-coord.at(1))< Radius*Radius){
                     updateNodeVal(whichpara,{i,j,0},index,1);
                 }
             }
@@ -310,39 +307,75 @@ class SimulationMesh{
         return flag;
     }
 
-    std::vector<std::vector<int>> gnrtDiskSeeds(int _num, double Radius, double tolerance){
+    std::vector<int> gnrtDiskSeeds(int _num, int Radius, int tolerance){
+        srand(time(0));
+        PFMTools::TimePoint test = PFMTools::now();
         int generatedNum = 0;
-        std::vector<std::vector<int>> result(_num,{0,0});
+        std::vector<int> Xcoords;
+        std::vector<int> Ycoords;
+        Xcoords.reserve(_num);Ycoords.reserve(_num);
         while(true){
             bool flag = true;
-            const int newX = Radius+rand()%MeshX; 
-            const int newY = Radius+rand()%MeshY;
-            const int maxX=(((newX+Radius)>=MeshX)?(flag = false):(newX+Radius));
-            const int maxY=(((newY+Radius)>=MeshY)?(flag = false):(newY+Radius));
-            if(flag == false){break;}
-            for(int i  = 0; i < generatedNum; i++){
-                // if(result.at(i))
+            // ensure not exceed range
+            const int newX = Radius+rand()%(MeshX-2*Radius); 
+            const int newY = Radius+rand()%(MeshY-2*Radius);
+
+            if(generatedNum==0){
+                Xcoords.push_back(newX);Ycoords.push_back(newY);
+                generatedNum++;
+                continue;
+            }
+
+            for(int i = 0; i<generatedNum; i++){
+                if(( abs(newX-Xcoords.at(i)) < (2*Radius-tolerance) ) && ( abs(newY-Ycoords.at(i)) < (2*Radius-tolerance) )){
+                    flag = false;
+                    break;
+                }
+            }
+
+            if(PFMTools::RunTimeCounter(test,1) > 30){
+                std::cout<<"unsuitable radius or tolerance, tolerance adjusted larger"<<std::endl;
+                test = PFMTools::now();
+                tolerance++;
+                continue;
+            }
+            
+            if(flag==false){
+                continue;
+            }
+            else if(flag==true){
+                Xcoords.push_back(newX);
+                Ycoords.push_back(newY);
+                generatedNum++;
+            }
+
+            if(generatedNum==_num){
+                break;
+            }
+
+        }
+        Xcoords.insert(Xcoords.end(), Ycoords.begin(), Ycoords.end());
+        return Xcoords;
+    }
+
+    bool isOverlap(WHICHPARA whichpara,std::vector<int> newCoord, double Radius, double tolerance){
+        int flag=0;
+        std::vector<double> testedVal (getUni_Prop(whichpara));
+        for(int i = (newCoord.at(0)-Radius-1<0?0:newCoord.at(0)-Radius-1); i < (newCoord.at(0)+Radius+1>=MeshX?MeshX:newCoord.at(0)+Radius+1); i++){
+            for(int j = (newCoord.at(1)-Radius-1<0?0:newCoord.at(1)-Radius-1); j<(newCoord.at(1)+Radius+1>=MeshY?MeshY:newCoord.at(1)+Radius+1); j++){
+                if((i-newCoord.at(0))*(i-newCoord.at(0))+(j-newCoord.at(1))*(j-newCoord.at(1))<= (Radius-tolerance)*(Radius-tolerance)){
+                    if(testedVal.at(transCoord({i,j,0}))>0.00001){flag++;}
+                }
             }
         }
+        testedVal.clear();
+        if(flag != 0){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
-    // bool isOverlap(WHICHPARA whichpara,std::vector<int> newCoord, double Radius, double tolerance){
-    //     int flag=0;
-    //     std::vector<double> testedVal (getUni_Prop(whichpara));
-    //     for(int i = (newCoord.at(0)-Radius-1<0?0:newCoord.at(0)-Radius-1); i < (newCoord.at(0)+Radius+1>=MeshX?MeshX:newCoord.at(0)+Radius+1); i++){
-    //         for(int j = (newCoord.at(1)-Radius-1<0?0:newCoord.at(1)-Radius-1); j<(newCoord.at(1)+Radius+1>=MeshY?MeshY:newCoord.at(1)+Radius+1); j++){
-    //             if((i-newCoord.at(0))*(i-newCoord.at(0))+(j-newCoord.at(1))*(j-newCoord.at(1))<= (Radius-tolerance)*(Radius-tolerance)){
-    //                 if(testedVal.at(transCoord({i,j,0}))>0.00001){flag++;}
-    //             }
-    //         }
-    //     }
-    //     testedVal.clear();
-    //     if(flag != 0){
-    //         return true;
-    //     }
-    //     else{
-    //         return false;
-    //     }
-    // }
 
     /*************************************************************/
 
