@@ -85,11 +85,11 @@ int main(){
             mesh.outVTKAll(_path, WHICHPARA::PHSFRAC, istep);
             mesh.outVTKAll(_path, WHICHPARA::TEMP, istep);
             cout<<"Done Step: "<<istep;
-            PFMTools::RunTimeCounter(start);
+            PFMTools::RunTimeCounter(start,false);
         }
     }
 
-    PFMTools::RunTimeCounter(start);
+    PFMTools::RunTimeCounter(start,false);
 
     return 0;
 }

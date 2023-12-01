@@ -21,7 +21,7 @@ double term2_b(double phi, double sum){
 }
 
 int main(){
-    PFMTools::TimePoint start, dur;
+    PFMTools::TimePoint start = PFMTools::now(), dur = PFMTools::now();
 
 /*******************************************************************************************************/
     //Preparation
@@ -32,9 +32,11 @@ int main(){
     SimulationMesh mesh({ 200, 200, 1 }, { 1, 1, 1 }, 5.0e-3 ,node);
 
     double R = 0.0;
+    const double &&pi = 4.0*atan(1), &&Tmp0 = -2.0*mu/(pi*R*R);
+    const int &&nstep = 3000, &&nprint = 50;
     std::vector<double> Velo;
 
-    int simuflag = 2;
+    int simuflag = 1;
     if(simuflag ==1){
         R = 25;
         mesh.addEntry(WHICHPARA::PHSFRAC,1);
@@ -60,8 +62,10 @@ int main(){
                     node.Phs_Node.Entrys.at(index).Weight = 2;
                 }
             }
-        }      
+        }
+
     }
+    
 
     if (simuflag==0||simuflag==1){
         double &&xc1 = mesh.MeshX/2-1.25*R;
@@ -81,11 +85,8 @@ int main(){
         }
     }
 
-    const double &&pi = 4.0*atan(1), &&Tmp0 = -2.0*mu/(pi*R*R);
-    const int &&nstep = 3000, &&nprint = 50;
-
     for (int istep = 0; istep<=nstep; istep++){
-        if(istep == 500){mesh.setTimeStep(1.0e-2);}
+        if(istep >= 500){mesh.setTimeStep(1.0e-2);}
         mesh.Laplacian(WHICHPARA::PHSFRAC);
         mesh.Gradient(WHICHPARA::PHSFRAC);
 
@@ -106,21 +107,22 @@ int main(){
             }
 
             double INTG = std::move(Intg);
+
             if(istep >200){
-                if(simuflag==2){
+                if(simuflag==0||simuflag==1){
+                    VnX = Velo.at(index);
+                    VnY = 0.0;
+                }
+                else if(simuflag==2){
                     VnX = std::move(vn(Intx,Velo.at(index)));
                     VnY = std::move(vn(Inty,Velo.at(index)));
-                }
-                else if(simuflag==0||simuflag==1){
-                    VnX = Velo.at(index);
-                    VnY = 0;
                 }
             }
 
             for (auto &node1:mesh.SimuNodes){
                 double &&Term1 = modulus*node1.getLap(WHICHPARA::PHSFRAC, index);
                 double &&Term2 = index>=5?term2_a(node1.getVal(WHICHPARA::PHSFRAC, index), node1.sumPhsFrac()*node1.sumPhsFrac2()-node1.sumPhsFrac3())
-                        :term2_b(node1.getVal(WHICHPARA::PHSFRAC, index), node1.sumPhsFrac()*node1.sumPhsFrac2()-node1.sumPhsFrac3());
+                                        :term2_b(node1.getVal(WHICHPARA::PHSFRAC, index), node1.sumPhsFrac()*node1.sumPhsFrac2()-node1.sumPhsFrac3());
                 double &&Term3 = Tmp0*node1.getVal(WHICHPARA::PHSFRAC, index)*(INTG-pi*R*R);
                 double &&Term4 = (VnX*node1.getGrad(WHICHPARA::PHSFRAC, index, DIM::DimX)+VnY*node1.getGrad(WHICHPARA::PHSFRAC, index, DIM::DimY));
                 node1.Phs_Node.updateDVal(index, Term1+Term2+Term3-Term4);
@@ -131,7 +133,7 @@ int main(){
 
         if (istep%nprint==0){
             mesh.outVTKFilehead(_path, istep);
-            mesh.outVTKAve(_path, WHICHPARA::PHSFRAC, istep);
+            mesh.outVTKWgtd(_path, WHICHPARA::PHSFRAC, istep);
             cout<<"Done Step: "<<istep;
             PFMTools::RunTimeCounter(dur,true);
             dur = PFMTools::now();

@@ -173,6 +173,28 @@ class MeshNode{
         return 1;
     }
 
+    double getWeight(WHICHPARA whichpara, int _Index){
+        switch (whichpara){
+        case WHICHPARA::CON:
+            return Con_Node.getWeight(_Index);
+            break;
+        case WHICHPARA::PHSFRAC:
+            return Phs_Node.getWeight(_Index);
+            break;
+        case WHICHPARA::TEMP:
+            return Temp_Node.getWeight(_Index);
+            break;
+        case WHICHPARA::CUSTOM:
+            return Cust_Node.getWeight(_Index);
+            break;
+        default:
+            throw std::invalid_argument("No such Para");
+            return 1;
+            break;
+        }
+        return 1;
+    }
+
     double getLap(int whichpara, int _Index){
         switch (whichpara){
         case WHICHPARA::CON:
@@ -230,6 +252,50 @@ class MeshNode{
             break;
         case WHICHPARA::CUSTOM:
             return Cust_Node.getGrad(_Index, whichdim);
+            break;
+        default:
+            throw std::invalid_argument("No such Para or Index");
+            return 1;
+            break;
+        }
+        return {};
+    }
+
+    std::vector<double> getVelo(int whichpara, int _Index){
+        switch (whichpara){
+        case WHICHPARA::CON:
+            return Con_Node.getVelo(_Index);
+            break;
+        case WHICHPARA::PHSFRAC:
+            return Phs_Node.getVelo(_Index);
+            break;
+        case WHICHPARA::TEMP:
+            return Temp_Node.getVelo(_Index);
+            break;
+        case WHICHPARA::CUSTOM:
+            return Cust_Node.getVelo(_Index);
+            break;
+        default:
+            throw std::invalid_argument("No such Para or Index");
+            return {};
+            break;
+        }
+        return {};
+    }
+
+    double getVelo(int whichpara, int _Index, DIM whichdim){
+        switch (whichpara){
+        case WHICHPARA::CON:
+            return Con_Node.getVelo(_Index, whichdim);
+            break;
+        case WHICHPARA::PHSFRAC:
+            return Phs_Node.getVelo(_Index, whichdim);
+            break;
+        case WHICHPARA::TEMP:
+            return Temp_Node.getVelo(_Index, whichdim);
+            break;
+        case WHICHPARA::CUSTOM:
+            return Cust_Node.getVelo(_Index, whichdim);
             break;
         default:
             throw std::invalid_argument("No such Para or Index");

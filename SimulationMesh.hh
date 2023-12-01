@@ -248,12 +248,27 @@ class SimulationMesh{
 
     std::vector<double> getUni_Prop(WHICHPARA whichpara){
         std::vector<double> result;
+        result.reserve(getNum_Ent(whichpara));
         for (auto node : SimuNodes){
             double sum = 0;
             for (int i = 0; i < node.getNum_Ent(whichpara); i++){
                 sum += node.getVal(whichpara,i)* node.getVal(whichpara,i);
             }
             sum = sqrt(sum);
+            PFMTools::threshold(sum);
+            result.push_back(sum);
+        }
+        return result;
+    }
+
+    std::vector<double> getWgtd_Prop(WHICHPARA whichpara){
+        std::vector<double> result;
+        result.reserve(getNum_Ent(whichpara));
+        for (auto node : SimuNodes){
+            double sum = 0;
+            for (int i = 0; i < node.getNum_Ent(whichpara); i++){
+                sum += node.getVal(whichpara,i)* node.getVal(whichpara,i);
+            }
             PFMTools::threshold(sum);
             result.push_back(sum);
         }
@@ -287,7 +302,7 @@ class SimulationMesh{
     }
 
     /*************************************************************/
-    //! These methods is 2D only!//
+    //!!! 2D Methods Only !!!//
 
     bool generateDisk(WHICHPARA whichpara,std::vector<int> coord, int index, double Radius){
         bool flag = true;
@@ -303,14 +318,14 @@ class SimulationMesh{
                 }
             }
         }
-        std::cout<<"one disk generated, index: "<<index<<"\n";
+        std::cout<<"disk no."<<index<<"generated\n";
         return flag;
     }
 
     std::vector<int> gnrtDiskSeeds(int _num, int Radius, int tolerance){
         srand(time(0));
-        PFMTools::TimePoint test = PFMTools::now();
-        int generatedNum = 0;
+        int testGnrt = 0;
+        int NumGenerated = 0;
         std::vector<int> Xcoords;
         std::vector<int> Ycoords;
         Xcoords.reserve(_num);Ycoords.reserve(_num);
@@ -320,36 +335,43 @@ class SimulationMesh{
             const int newX = Radius+rand()%(MeshX-2*Radius); 
             const int newY = Radius+rand()%(MeshY-2*Radius);
 
-            if(generatedNum==0){
+            if(NumGenerated==0){
                 Xcoords.push_back(newX);Ycoords.push_back(newY);
-                generatedNum++;
+                std::cout<<"seed no.0 generated"<<std::endl;
+                NumGenerated++;
                 continue;
             }
 
-            for(int i = 0; i<generatedNum; i++){
+            for(int i = 0; i<NumGenerated; i++){
                 if(( abs(newX-Xcoords.at(i)) < (2*Radius-tolerance) ) && ( abs(newY-Ycoords.at(i)) < (2*Radius-tolerance) )){
                     flag = false;
                     break;
                 }
             }
 
-            if(PFMTools::RunTimeCounter(test,1) > 30){
-                std::cout<<"unsuitable radius or tolerance, tolerance adjusted larger"<<std::endl;
-                test = PFMTools::now();
-                tolerance++;
+            if(testGnrt>5e7){
+                std::cout<<"unsuitable radius or tolerance, tolerance addjusted to "<<++tolerance<<std::endl;
+                if(tolerance >= Radius*0.6){
+                    std::cout<<"radius too large"<<std::endl;
+                }
+                testGnrt = 0;
                 continue;
             }
             
             if(flag==false){
+                testGnrt++;
                 continue;
             }
+
             else if(flag==true){
                 Xcoords.push_back(newX);
                 Ycoords.push_back(newY);
-                generatedNum++;
+                std::cout<<"seed no."<<NumGenerated<<" generated"<<std::endl;
+                testGnrt = 0;
+                NumGenerated++;
             }
 
-            if(generatedNum==_num){
+            if(NumGenerated==_num){
                 break;
             }
 
@@ -596,6 +618,7 @@ class SimulationMesh{
     void outVTKFilehead(std::string _dirname, int istep);
     void outVTKAve(std::string _dirname, WHICHPARA whichpara, int istep);
     void outVTKAll(std::string _dirname, WHICHPARA whichpara, int istep);
+    void outVTKWgtd(std::string _dirname, WHICHPARA whichpara, int istep);
 
     void outVTK(std::string _dirname, int istep){
         outVTKFilehead(_dirname, istep);
@@ -603,14 +626,16 @@ class SimulationMesh{
         outVTKAve(_dirname, WHICHPARA::PHSFRAC, istep);
     }
 
-    void outCSV(std::string _dirname, std::string _filename,int istep,double _val){
+    /*************************************************************/
+    //!!! 2D Meshod Only !!!//
+    void outCSV(std::string _dirname, std::string _filename,int val_1,double val_2){
 
         std::string filename(_dirname+"/"+_filename+".csv");
         
         std::ofstream outfile;
         outfile.open(filename, std::ios::app);
 
-        outfile<<istep<<","<<_val<<std::endl;
+        outfile<<val_1<<","<<val_2<<std::endl;
 
         outfile.close();
     }
@@ -627,6 +652,8 @@ class SimulationMesh{
         outfile.flush();
         outfile.close();
     }
+
+    /*************************************************************/
 
 };
 
@@ -747,6 +774,49 @@ inline void SimulationMesh::outVTKAve(std::string _dirname, WHICHPARA whichpara,
     for (int i = 0;i<Num_Nodes;i++){
         if(!std::isnan(normed_phs.at(i))){
             outfile<<normed_phs.at(i)<<"\n";
+        }
+        else{
+            throw std::invalid_argument("output is nan");
+        }
+    }
+    outfile.flush();
+
+    outfile.close();
+
+}
+
+inline void SimulationMesh::outVTKWgtd(std::string _dirname, WHICHPARA whichpara, int istep){
+
+    char *filename = new char[_dirname.length()+1];
+    std::strcpy(filename, _dirname.c_str());
+    std::sprintf(filename, "%s/time_%04d.vtk", filename, istep);
+
+    std::ofstream outfile;
+    outfile.open(filename, std::ios::app);
+
+    char varname[64];
+    switch (whichpara){
+    case WHICHPARA::PHSFRAC:
+        std::sprintf(varname, "PHSFRAC_WGT");
+        break;
+    case WHICHPARA::CON:
+        std::sprintf(varname, "CON_WGT");
+        break;
+    case WHICHPARA::CUSTOM:
+        std::sprintf(varname, "CUST_WGT");
+        break;
+    case WHICHPARA::TEMP:
+        std::printf(varname, "TEMP_WGT");
+        break;
+    default:
+        break;
+    }
+    std::vector<double> weighted_phs(getWgtd_Prop(whichpara));
+    outfile<<"SCALARS "<<varname<<"  float  1\n";
+    outfile<<"LOOKUP_TABLE default\n";
+    for (int i = 0;i<Num_Nodes;i++){
+        if(!std::isnan(weighted_phs.at(i))){
+            outfile<<weighted_phs.at(i)<<"\n";
         }
         else{
             throw std::invalid_argument("output is nan");
