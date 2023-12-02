@@ -21,15 +21,16 @@ double term2_b(double phi, double sum){
 }
 
 int main(){
-    PFMTools::TimePoint start, dur;
+    PFMTools::TimePoint start = PFMTools::now(), dur = PFMTools::now();
 
 /*******************************************************************************************************/
     //Preparation
     //about file path, constants, parameters, mesh and nodes
-    std::string _path(toVTK_Path("../../CS5_MultiCell_TEST"));
+    std::string _path(toVTK_Path("../../CS5_2Cell_parallelTEST"));
 
-    MeshNode node(PhaseNode(std::vector<PhaseEntry>(1, Def_PhsEnt)));
-    SimulationMesh mesh({ 200, 200, 1 }, { 1, 1, 1 }, 5.0e-3 ,node);
+    MeshNode _node(PhaseNode(std::vector<PhaseEntry>(1, Def_PhsEnt)));
+    SimulationMesh mesh({ 200, 200, 1 }, { 1, 1, 1 }, 5.0e-3 ,_node);
+    mesh.addEntry(WHICHPARA::CUSTOM,1);
 
     double R = 0.0;
     std::vector<double> Velo;
@@ -53,11 +54,11 @@ int main(){
                 Velo.push_back(0.2);
             }
             else{
-                Velo.push_back(-0.2);         
+                Velo.push_back(-0.2);
             }
             if(index<5){
                 for(auto &node : mesh.SimuNodes){
-                    node.Phs_Node.Entrys.at(index).Weight = 2;
+                    node.Phs_Node.Entrys.at(index).Weight = 1.3;
                 }
             }
         }      
@@ -89,6 +90,12 @@ int main(){
         mesh.Laplacian(WHICHPARA::PHSFRAC);
         mesh.Gradient(WHICHPARA::PHSFRAC);
 
+        for(auto &node : mesh.SimuNodes){
+            node.Cust_Node.updateVal(0,node.Phs_Node.sumPhsFrac()*node.Phs_Node.sumPhsFrac2()-node.Phs_Node.sumPhsFrac3());
+            node.Cust_Node.updateVal(1,node.Phs_Node.sumPhsFrac2());
+        }
+
+        // #pragma omp parallel for
         for (int index = 0; index<mesh.getNum_Ent(WHICHPARA::PHSFRAC); index++){
             
             double Intg = 0.0, Intx = 0.0, Inty = 0.0;
@@ -98,29 +105,26 @@ int main(){
                 // Integral in cust
                 double phi = node0.getVal(WHICHPARA::PHSFRAC, index);
                 Intg += phi*phi;
-                if(simuflag==2){
-                    phi *= (node0.sumPhsFrac2()-phi*phi);
+                if(istep>50){
+                    phi *= (node0.Cust_Node.getVal(1)-phi*phi);
                     Intx += phi*node0.getGrad(WHICHPARA::PHSFRAC, index, DIM::DimX);
                     Inty += phi*node0.getGrad(WHICHPARA::PHSFRAC, index, DIM::DimY);
                 }
             }
 
             double INTG = std::move(Intg);
-            if(istep >200){
-                if(simuflag==2){
+            if(istep >50){
+                {
                     VnX = vn(Intx,Velo.at(index));
                     VnY = vn(Inty,Velo.at(index));
-                }
-                else if(simuflag==0||simuflag==1){
-                    VnX = Velo.at(index);
-                    VnY = 0;
+                    // VnY =0;
                 }
             }
 
             for (auto &node1:mesh.SimuNodes){
                 double &&Term1 = modulus*node1.getLap(WHICHPARA::PHSFRAC, index);
-                double &&Term2 = index>=5?term2_a(node1.getVal(WHICHPARA::PHSFRAC, index), node1.sumPhsFrac()*node1.sumPhsFrac2()-node1.sumPhsFrac3())
-                        :term2_b(node1.getVal(WHICHPARA::PHSFRAC, index), node1.sumPhsFrac()*node1.sumPhsFrac2()-node1.sumPhsFrac3());
+                double &&Term2 = index>=5?term2_a(node1.getVal(WHICHPARA::PHSFRAC, index),node1.getVal(WHICHPARA::CUSTOM,0))
+                                         :term2_b(node1.getVal(WHICHPARA::PHSFRAC, index),node1.getVal(WHICHPARA::CUSTOM,0));
                 double &&Term3 = Tmp0*node1.getVal(WHICHPARA::PHSFRAC, index)*(INTG-pi*R*R);
                 double &&Term4 = (VnX*node1.getGrad(WHICHPARA::PHSFRAC, index, DIM::DimX)+VnY*node1.getGrad(WHICHPARA::PHSFRAC, index, DIM::DimY));
                 node1.Phs_Node.updateDVal(index, Term1+Term2+Term3-Term4);
@@ -131,8 +135,8 @@ int main(){
 
         if (istep%nprint==0){
             mesh.outVTKFilehead(_path, istep);
-            mesh.outVTKAll(_path,WHICHPARA::PHSFRAC,istep);
             mesh.outVTKWgtd(_path, WHICHPARA::PHSFRAC, istep);
+            mesh.outVTKAll(_path,WHICHPARA::PHSFRAC,istep);
             cout<<"Done Step: "<<istep;
             PFMTools::RunTimeCounter(dur,true);
             dur = PFMTools::now();

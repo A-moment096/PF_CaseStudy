@@ -255,7 +255,7 @@ class SimulationMesh{
                 sum += node.getVal(whichpara,i)* node.getVal(whichpara,i);
             }
             sum = sqrt(sum);
-            PFMTools::threshold(sum);
+            // PFMTools::threshold(sum);
             result.push_back(sum);
         }
         return result;
@@ -269,7 +269,7 @@ class SimulationMesh{
             for (int i = 0; i < node.getNum_Ent(whichpara); i++){
                 sum += node.getVal(whichpara,i)* node.getWeight(whichpara,i);
             }
-            PFMTools::threshold(sum);
+            // PFMTools::threshold(sum);
             result.push_back(sum);
         }
         return result;
@@ -860,7 +860,7 @@ inline void SimulationMesh::outVTKAll(std::string _dirname, WHICHPARA whichpara,
         outfile<<"LOOKUP_TABLE default\n";
         for (int i = 0;i<Num_Nodes;i++){
             if(!std::isnan(SimuNodes.at(i).getVal(whichpara,num))){
-                outfile<<SimuNodes.at(i).getVal(whichpara,num)<<"\n";
+                outfile<<SimuNodes.at(i).getVal(whichpara,num)*SimuNodes.at(i).getWeight(whichpara,num)<<"\n";
             }
         else{
             throw std::invalid_argument("output is nan");
