@@ -267,7 +267,7 @@ class SimulationMesh{
         for (auto node : SimuNodes){
             double sum = 0;
             for (int i = 0; i < node.getNum_Ent(whichpara); i++){
-                sum += node.getVal(whichpara,i)* node.getVal(whichpara,i);
+                sum += node.getVal(whichpara,i)* node.getWeight(whichpara,i);
             }
             PFMTools::threshold(sum);
             result.push_back(sum);
@@ -318,7 +318,7 @@ class SimulationMesh{
                 }
             }
         }
-        std::cout<<"disk no."<<index<<"generated\n";
+        std::cout<<"disk no."<<index<<" generated\n";
         return flag;
     }
 

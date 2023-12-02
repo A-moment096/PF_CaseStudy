@@ -42,8 +42,8 @@ int main(){
         Velo.push_back(-0.5);
     }
     else if(simuflag ==2){
-        R = 12;
-        mesh.addEntry(WHICHPARA::PHSFRAC,68);
+        R = 25;
+        mesh.addEntry(WHICHPARA::PHSFRAC,15);
         vector<int> datas (PFMTools::readCSV("../TEST/DiskSeeds.csv"));
         for(int index = 0; index < mesh.getNum_Ent(WHICHPARA::PHSFRAC); index++){
             mesh.generateDisk(WHICHPARA::PHSFRAC,{datas.at(2*index),datas.at(2*index+1)},index,R);
@@ -108,8 +108,8 @@ int main(){
             double INTG = std::move(Intg);
             if(istep >200){
                 if(simuflag==2){
-                    VnX = std::move(vn(Intx,Velo.at(index)));
-                    VnY = std::move(vn(Inty,Velo.at(index)));
+                    VnX = vn(Intx,Velo.at(index));
+                    VnY = vn(Inty,Velo.at(index));
                 }
                 else if(simuflag==0||simuflag==1){
                     VnX = Velo.at(index);
@@ -131,7 +131,8 @@ int main(){
 
         if (istep%nprint==0){
             mesh.outVTKFilehead(_path, istep);
-            mesh.outVTKAve(_path, WHICHPARA::PHSFRAC, istep);
+            mesh.outVTKAll(_path,WHICHPARA::PHSFRAC,istep);
+            mesh.outVTKWgtd(_path, WHICHPARA::PHSFRAC, istep);
             cout<<"Done Step: "<<istep;
             PFMTools::RunTimeCounter(dur,true);
             dur = PFMTools::now();
