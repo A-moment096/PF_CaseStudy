@@ -26,7 +26,7 @@ int main(){
 /*******************************************************************************************************/
     //Preparation
     //about file path, constants, parameters, mesh and nodes
-    std::string _path(toVTK_Path("../../CS5_2Cell_parallelTEST"));
+    std::string _path(toVTK_Path("../../CS5_69Cell_TEST"));
 
     MeshNode _node(PhaseNode(std::vector<PhaseEntry>(1, Def_PhsEnt)));
     SimulationMesh mesh({ 200, 200, 1 }, { 1, 1, 1 }, 5.0e-3 ,_node);
@@ -43,9 +43,9 @@ int main(){
         Velo.push_back(-0.5);
     }
     else if(simuflag ==2){
-        R = 25;
-        mesh.addEntry(WHICHPARA::PHSFRAC,15);
-        vector<int> datas (PFMTools::readCSV("../TEST/DiskSeeds.csv"));
+        R = 12;
+        mesh.addEntry(WHICHPARA::PHSFRAC,68);
+        vector<int> datas (PFMTools::readCSV("../TEST/DiskSeeds_69.csv"));
         for(int index = 0; index < mesh.getNum_Ent(WHICHPARA::PHSFRAC); index++){
             mesh.generateDisk(WHICHPARA::PHSFRAC,{datas.at(2*index),datas.at(2*index+1)},index,R);
             Velo.reserve(mesh.getNum_Ent(WHICHPARA::PHSFRAC));
@@ -89,13 +89,15 @@ int main(){
         if(istep == 500){mesh.setTimeStep(1.0e-2);}
         mesh.Laplacian(WHICHPARA::PHSFRAC);
         mesh.Gradient(WHICHPARA::PHSFRAC);
-
+        #pragma omp parallel for
         for(auto &node : mesh.SimuNodes){
-            node.Cust_Node.updateVal(0,node.Phs_Node.sumPhsFrac()*node.Phs_Node.sumPhsFrac2()-node.Phs_Node.sumPhsFrac3());
-            node.Cust_Node.updateVal(1,node.Phs_Node.sumPhsFrac2());
+            #pragma omp critical
+            {
+                double sum2 = node.Phs_Node.sumPhsFrac2();
+                node.Cust_Node.updateVal(0,node.Phs_Node.sumPhsFrac()*sum2-node.Phs_Node.sumPhsFrac3());
+                node.Cust_Node.updateVal(1,sum2);
+            }
         }
-
-        // #pragma omp parallel for
         for (int index = 0; index<mesh.getNum_Ent(WHICHPARA::PHSFRAC); index++){
             
             double Intg = 0.0, Intx = 0.0, Inty = 0.0;
