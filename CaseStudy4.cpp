@@ -5,7 +5,7 @@ using std::endl;
 using std::vector;
 
 const double &&tau = 0.0003, &&epsilon_b = 0.01, &&mu = 1.0, &&kappa = 1.8;
-const double &&delta = 0.02, &&aniso = 0.2+atan(1);
+const double &&delta = 0.02, &&aniso = 4;
 const double &&alpha = 0.9, &&GaMMA = 10.0, &&Teq = 1.0, &&theta0 = 0.2;
 const double &&pi = 4*atan(1);
 

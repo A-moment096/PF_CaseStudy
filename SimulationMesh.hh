@@ -652,11 +652,9 @@ std::string toVTK_Path(std::string _dirname){
 
 inline void SimulationMesh::outVTKFilehead(std::string _dirname, int istep){
 
-
-    char *filename = new char[_dirname.length()+1];
-    std::strcpy(filename, _dirname.c_str());
-
-    std::sprintf(filename, "%s/time_%04d.vtk", filename, istep);
+    std::ostringstream filename_ss;
+    filename_ss<<_dirname<<"/time_"<<istep<<".vtk";
+    std::string filename {filename_ss.str()};
 
     /*************************************************************/
     std::ofstream outfile;
@@ -684,9 +682,9 @@ inline void SimulationMesh::outVTKFilehead(std::string _dirname, int istep){
 
 inline void SimulationMesh::outVTKAve(std::string _dirname, WHICHPARA whichpara, int istep){
 
-    char *filename = new char[_dirname.length()+1];
-    std::strcpy(filename, _dirname.c_str());
-    std::sprintf(filename, "%s/time_%04d.vtk", filename, istep);
+    std::ostringstream filename_ss;
+    filename_ss<<_dirname<<"/time_"<<istep<<".vtk";
+    std::string filename {filename_ss.str()};
 
     std::ofstream outfile;
     outfile.open(filename, std::ios::app);
@@ -727,9 +725,9 @@ inline void SimulationMesh::outVTKAve(std::string _dirname, WHICHPARA whichpara,
 
 inline void SimulationMesh::outVTKAll(std::string _dirname, WHICHPARA whichpara, int istep){
 
-    char *filename = new char[_dirname.length()+1];
-    std::strcpy(filename, _dirname.c_str());
-    std::sprintf(filename, "%s/time_%04d.vtk", filename, istep);
+    std::ostringstream filename_ss;
+    filename_ss<<_dirname<<"/time_"<<istep<<".vtk";
+    std::string filename {filename_ss.str()};
 
     std::ofstream outfile;
     outfile.open(filename, std::ios::app);
