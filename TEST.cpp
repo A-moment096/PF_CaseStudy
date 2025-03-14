@@ -1,4 +1,4 @@
-#include "PFM.hh"
+#include "../include/PFM.hh"
 
 using std::cout;
 using std::endl;

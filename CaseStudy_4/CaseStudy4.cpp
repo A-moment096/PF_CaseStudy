@@ -1,4 +1,4 @@
-#include "PFM.hh"
+#include "../include/PFM.hh"
 
 using std::cout;
 using std::endl;
@@ -32,7 +32,7 @@ int main(){
     /*******************************************************************************************************/
         //Preparation
         //about file path, constants, parameters, mesh and nodes, the
-    std::string _path(toVTK_Path("../../CS4_3.34Branch_TEST"));
+    std::string _path(toVTK_Path("./"));
 
     MeshNode node;
     SimulationMesh mesh({ 300, 300, 1 }, { 0.030, 0.030, 1 },1.0e-4 ,std::move(node));
