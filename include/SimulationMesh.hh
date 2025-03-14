@@ -257,12 +257,28 @@ public:
 
     std::vector<double> getUni_Prop(WHICHPARA whichpara) {
         std::vector<double> result;
+        result.reserve(getNum_Ent(whichpara));
         for (auto node : SimuNodes) {
             double sum = 0;
             for (int i = 0; i < node.getNum_Ent(whichpara); i++) {
                 sum += node.getVal(whichpara, i) * node.getVal(whichpara, i);
             }
-            PFMTools::threshold(sum);
+            sum = sqrt(sum);
+            // PFMTools::threshold(sum);
+            result.push_back(sum);
+        }
+        return result;
+    }
+
+    std::vector<double> getWgtd_Prop(WHICHPARA whichpara) {
+        std::vector<double> result;
+        result.reserve(getNum_Ent(whichpara));
+        for (auto node : SimuNodes) {
+            double sum = 0;
+            for (int i = 0; i < node.getNum_Ent(whichpara); i++) {
+                sum += node.getVal(whichpara, i) * node.getWeight(whichpara, i);
+            }
+            // PFMTools::threshold(sum);
             result.push_back(sum);
         }
         return result;
@@ -294,7 +310,7 @@ public:
     }
 
     /*************************************************************/
-    //! These methods is 2D only!//
+    //!!! 2D Methods Only !!!//
 
     bool generateDisk(WHICHPARA whichpara, std::vector<int> coord, int index, double Radius) {
         bool flag = true;
@@ -307,54 +323,93 @@ public:
         }
         for (int i = minX; i < maxX; i++) {
             for (int j = minY; j < maxY; j++) {
-                const int a = coord.at(0) + rand() % 3 - 1;
-                const int b = coord.at(0) + rand() % 3 - 1;
-                const int c = coord.at(1) + rand() % 3 - 1;
-                const int d = coord.at(1) + rand() % 3 - 1;
-                if ((i - a) * (i - b) + (j - c) * (j - d) < Radius * Radius) {
+                if ((i - coord.at(0)) * (i - coord.at(0)) + (j - coord.at(1)) * (j - coord.at(1)) < Radius * Radius) {
                     updateNodeVal(whichpara, {i, j, 0}, index, 1);
                 }
             }
         }
-        std::cout << "one disk generated, index: " << index << "\n";
+        std::cout << "disk no." << index << " generated\n";
         return flag;
     }
 
-    std::vector<std::vector<int>> gnrtDiskSeeds(int _num, double Radius, double tolerance) {
-        int generatedNum = 0;
-        std::vector<std::vector<int>> result(_num, {0, 0});
+    std::vector<int> gnrtDiskSeeds(int _num, int Radius, int tolerance) {
+        srand(time(0));
+        int testGnrt = 0;
+        int NumGenerated = 0;
+        std::vector<int> Xcoords;
+        std::vector<int> Ycoords;
+        Xcoords.reserve(_num);
+        Ycoords.reserve(_num);
         while (true) {
             bool flag = true;
-            const int newX = Radius + rand() % MeshX;
-            const int newY = Radius + rand() % MeshY;
-            const int maxX = (((newX + Radius) >= MeshX) ? (flag = false) : (newX + Radius));
-            const int maxY = (((newY + Radius) >= MeshY) ? (flag = false) : (newY + Radius));
+            // ensure not exceed range
+            const int newX = Radius + rand() % (MeshX - 2 * Radius);
+            const int newY = Radius + rand() % (MeshY - 2 * Radius);
+
+            if (NumGenerated == 0) {
+                Xcoords.push_back(newX);
+                Ycoords.push_back(newY);
+                std::cout << "seed no.0 generated" << std::endl;
+                NumGenerated++;
+                continue;
+            }
+
+            for (int i = 0; i < NumGenerated; i++) {
+                if ((abs(newX - Xcoords.at(i)) < (2 * Radius - tolerance)) && (abs(newY - Ycoords.at(i)) < (2 * Radius - tolerance))) {
+                    flag = false;
+                    break;
+                }
+            }
+
+            if (testGnrt > 5e7) {
+                std::cout << "unsuitable radius or tolerance, tolerance addjusted to " << ++tolerance << std::endl;
+                if (tolerance >= Radius * 0.6) {
+                    std::cout << "radius too large" << std::endl;
+                }
+                testGnrt = 0;
+                continue;
+            }
+
             if (flag == false) {
+                testGnrt++;
+                continue;
+            }
+
+            else if (flag == true) {
+                Xcoords.push_back(newX);
+                Ycoords.push_back(newY);
+                std::cout << "seed no." << NumGenerated << " generated" << std::endl;
+                testGnrt = 0;
+                NumGenerated++;
+            }
+
+            if (NumGenerated == _num) {
                 break;
             }
-            for (int i = 0; i < generatedNum; i++) {
-                // if(result.at(i))
+        }
+        Xcoords.insert(Xcoords.end(), Ycoords.begin(), Ycoords.end());
+        return Xcoords;
+    }
+
+    bool isOverlap(WHICHPARA whichpara, std::vector<int> newCoord, double Radius, double tolerance) {
+        int flag = 0;
+        std::vector<double> testedVal(getUni_Prop(whichpara));
+        for (int i = (newCoord.at(0) - Radius - 1 < 0 ? 0 : newCoord.at(0) - Radius - 1); i < (newCoord.at(0) + Radius + 1 >= MeshX ? MeshX : newCoord.at(0) + Radius + 1); i++) {
+            for (int j = (newCoord.at(1) - Radius - 1 < 0 ? 0 : newCoord.at(1) - Radius - 1); j < (newCoord.at(1) + Radius + 1 >= MeshY ? MeshY : newCoord.at(1) + Radius + 1); j++) {
+                if ((i - newCoord.at(0)) * (i - newCoord.at(0)) + (j - newCoord.at(1)) * (j - newCoord.at(1)) <= (Radius - tolerance) * (Radius - tolerance)) {
+                    if (testedVal.at(transCoord({i, j, 0})) > 0.00001) {
+                        flag++;
+                    }
+                }
             }
         }
+        testedVal.clear();
+        if (flag != 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
-    // bool isOverlap(WHICHPARA whichpara,std::vector<int> newCoord, double Radius, double tolerance){
-    //     int flag=0;
-    //     std::vector<double> testedVal (getUni_Prop(whichpara));
-    //     for(int i = (newCoord.at(0)-Radius-1<0?0:newCoord.at(0)-Radius-1); i < (newCoord.at(0)+Radius+1>=MeshX?MeshX:newCoord.at(0)+Radius+1); i++){
-    //         for(int j = (newCoord.at(1)-Radius-1<0?0:newCoord.at(1)-Radius-1); j<(newCoord.at(1)+Radius+1>=MeshY?MeshY:newCoord.at(1)+Radius+1); j++){
-    //             if((i-newCoord.at(0))*(i-newCoord.at(0))+(j-newCoord.at(1))*(j-newCoord.at(1))<= (Radius-tolerance)*(Radius-tolerance)){
-    //                 if(testedVal.at(transCoord({i,j,0}))>0.00001){flag++;}
-    //             }
-    //         }
-    //     }
-    //     testedVal.clear();
-    //     if(flag != 0){
-    //         return true;
-    //     }
-    //     else{
-    //         return false;
-    //     }
-    // }
 
     /*************************************************************/
 
@@ -572,6 +627,7 @@ public:
     void outVTKFilehead(std::string _dirname, int istep);
     void outVTKAve(std::string _dirname, WHICHPARA whichpara, int istep);
     void outVTKAll(std::string _dirname, WHICHPARA whichpara, int istep);
+    void outVTKWgtd(std::string _dirname, WHICHPARA whichpara, int istep);
 
     void outVTK(std::string _dirname, int istep) {
         outVTKFilehead(_dirname, istep);
@@ -579,14 +635,16 @@ public:
         outVTKAve(_dirname, WHICHPARA::PHSFRAC, istep);
     }
 
-    void outCSV(std::string _dirname, std::string _filename, int istep, double _val) {
+    /*************************************************************/
+    //!!! 2D Meshod Only !!!//
+    void outCSV(std::string _dirname, std::string _filename, int val_1, double val_2) {
 
         std::string filename(_dirname + "/" + _filename + ".csv");
 
         std::ofstream outfile;
         outfile.open(filename, std::ios::app);
 
-        outfile << istep << "," << _val << std::endl;
+        outfile << val_1 << "," << val_2 << std::endl;
 
         outfile.close();
     }
@@ -603,6 +661,8 @@ public:
         outfile.flush();
         outfile.close();
     }
+
+    /*************************************************************/
 };
 
 /**************************************************************************************************************************/
@@ -726,6 +786,47 @@ inline void SimulationMesh::outVTKAve(std::string _dirname, WHICHPARA whichpara,
     for (int i = 0; i < Num_Nodes; i++) {
         if (!std::isnan(normed_phs.at(i))) {
             outfile << normed_phs.at(i) << "\n";
+        } else {
+            throw std::invalid_argument("output is nan");
+        }
+    }
+    outfile.flush();
+
+    outfile.close();
+}
+
+inline void SimulationMesh::outVTKWgtd(std::string _dirname, WHICHPARA whichpara, int istep) {
+
+    char *filename = new char[_dirname.length() + 1];
+    std::strcpy(filename, _dirname.c_str());
+    std::sprintf(filename, "%s/time_%04d.vtk", filename, istep);
+
+    std::ofstream outfile;
+    outfile.open(filename, std::ios::app);
+
+    char varname[64];
+    switch (whichpara) {
+    case WHICHPARA::PHSFRAC:
+        std::sprintf(varname, "PHSFRAC_WGT");
+        break;
+    case WHICHPARA::CON:
+        std::sprintf(varname, "CON_WGT");
+        break;
+    case WHICHPARA::CUSTOM:
+        std::sprintf(varname, "CUST_WGT");
+        break;
+    case WHICHPARA::TEMP:
+        std::printf(varname, "TEMP_WGT");
+        break;
+    default:
+        break;
+    }
+    std::vector<double> weighted_phs(getWgtd_Prop(whichpara));
+    outfile << "SCALARS " << varname << "  float  1\n";
+    outfile << "LOOKUP_TABLE default\n";
+    for (int i = 0; i < Num_Nodes; i++) {
+        if (!std::isnan(weighted_phs.at(i))) {
+            outfile << weighted_phs.at(i) << "\n";
         } else {
             throw std::invalid_argument("output is nan");
         }
