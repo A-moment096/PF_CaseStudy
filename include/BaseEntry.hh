@@ -43,12 +43,17 @@ class BaseEntry{
     public:
     int Index = 0;
     double Val = 0;
+    double Weight = 1;
+    
     double Lap = 0;
-
     std::vector<double> Grad{0.0,0.0,0.0};
     double &GradX = Grad.at(0);
     double &GradY = Grad.at(1);
     double &GradZ = Grad.at(2);
+    std::vector<double> Velo{0.0,0.0,0.0};
+    double &VeloX = Velo.at(0);
+    double &VeloY = Velo.at(1);
+    double &VeloZ = Velo.at(2);
 
     double DVal = 0;
 
@@ -60,21 +65,35 @@ class BaseEntry{
 
     BaseEntry(const BaseEntry &_Entry){
         Index = _Entry.Index;
+        Weight = _Entry.Weight;
         Val = _Entry.Val;
+
         Lap = _Entry.Lap;
         GradX = _Entry.GradX;
         GradY = _Entry.GradY;
         GradZ = _Entry.GradZ;
+
+        VeloX = _Entry.VeloX;
+        VeloY = _Entry.VeloY;
+        VeloZ = _Entry.VeloZ;
+
         DVal = _Entry.DVal;
     }
 
     BaseEntry &operator= (const BaseEntry &_Entry){
         Index = _Entry.Index;
+        Weight = _Entry.Weight;
         Val = _Entry.Val;
+
         Lap = _Entry.Lap;
         GradX = _Entry.GradX;
         GradY = _Entry.GradY;
         GradZ = _Entry.GradZ;
+        
+        VeloX = _Entry.VeloX;
+        VeloY = _Entry.VeloY;
+        VeloZ = _Entry.VeloZ;
+        
         DVal = _Entry.DVal;
         return *this;
     }

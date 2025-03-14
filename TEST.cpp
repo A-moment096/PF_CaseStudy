@@ -6,59 +6,46 @@ using std::vector;
 
 
 int main(){
-    PFMTools::TimePoint start;
-    start = PFMTools::now();
-
-    std::string ProjName(toVTK_Path("../../TEST"));
-    MeshNode node(std::vector<PhaseEntry>(64, Def_PhsEnt));
-    SimulationMesh mesh({ 200, 200, 1 }, { 1, 1, 1 }, 0.01, node);
-    srand(time(0));
-
-    // int R = 12,Xc,Yc;
-    // for (int index = 0; index<mesh.getNum_Ent(WHICHPARA::PHSFRAC); index++){
-    //     while (true){
-    //         Xc = rand()%mesh.MeshX; Yc = rand()%mesh.MeshY;
-    //         if (!(mesh.isOverlap(WHICHPARA::PHSFRAC, {Xc , Yc }, R, 3))){
-    //             if (mesh.generateDisk(WHICHPARA::PHSFRAC, { Xc, Yc }, index, R)){
-    //                 mesh.outCSV(ProjName,"cs5_64",Xc,Yc);
-    //                 mesh.outVTKFilehead(ProjName, istep);
-    //                 mesh.outVTKAve(ProjName, WHICHPARA::PHSFRAC, istep);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
-
-    vector<int>alphaX{ 12, 37, 62, 87, 112, 137, 162, 187, 12, 37, 62, 87, 112, 137, 162, 187, 12, 37, 62, 87, 112, 137, 162, 187, 12, 37, 62, 87, 112, 137, 162, 187, 12, 37, 62, 87, 112, 137, 162, 187, 12, 37, 62, 87, 112, 137, 162, 187, 12, 37, 62, 87, 112, 137, 162, 187, 12, 37, 62, 87, 112, 137, 162, 187 };
-    vector<int>alphaY{ 12, 12, 12, 12, 12, 12, 12, 12, 37, 37, 37, 37, 37, 37, 37, 37, 62, 62, 62, 62, 62, 62, 62, 62, 87, 87, 87, 87, 87, 87, 87, 87, 112, 112, 112, 112, 112, 112, 112, 112, 137, 137, 137, 137, 137, 137, 137, 137, 162, 162, 162, 162, 162, 162, 162, 162, 187, 187, 187, 187, 187, 187, 187, 187 };
-    vector<int>betaX{ 23, 46, 69, 92, 115, 138, 161, 184 };
-    vector<int>betaY{ 25, 50, 75, 100, 125, 150, 175 };
-
-    // std::random_device rd;  // a seed source for the random number engine
-    // std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
-    // std::uniform_int_distribution<> distrib(-1,1);
-
+    PFMTools::TimePoint start = PFMTools::now(), dur = PFMTools::now();
+    MeshNode _node(PhaseNode(std::vector<PhaseEntry>(1, Def_PhsEnt)));
+    SimulationMesh mesh({ 200, 200, 1 }, { 1, 1, 1 }, 5.0e-3, _node);
+    mesh.addEntry(WHICHPARA::CUSTOM, 1);
+    double R = 12;
+    mesh.addEntry(WHICHPARA::PHSFRAC, 68);
+    vector<int> datas(PFMTools::readCSV("../TEST/DiskSeeds_69.csv"));
     for (int index = 0; index<mesh.getNum_Ent(WHICHPARA::PHSFRAC); index++){
-        mesh.generateDisk(WHICHPARA::PHSFRAC,{alphaX.at(index),alphaY.at(index)},index,12);
+        mesh.generateDisk(WHICHPARA::PHSFRAC, { datas.at(2*index), datas.at(2*index+1) }, index, R);
+    }
+    int nstep = 10000, nprint = 50;
+    std::string _path(toVTK_Path("../../TEST/CS5_69Cell_TEST"));
+cout<<"ready"<<endl;
+    for (int istep = 0; istep<=nstep; istep++){
+    #pragma omp parallel for
+        for (auto &node:mesh.SimuNodes){
+        #pragma omp critical
+            {
+                double sum2 = node.Phs_Node.sumPhsFrac2();
+                node.Cust_Node.updateVal(0, node.Phs_Node.sumPhsFrac()*sum2-node.Phs_Node.sumPhsFrac3());
+                node.Cust_Node.updateVal(1, sum2);
+            }
+            // double sum2 = node.Phs_Node.sumPhsFrac2();
+            // node.Cust_Node.updateVal(0,node.Phs_Node.sumPhsFrac()*sum2-node.Phs_Node.sumPhsFrac3());
+            // node.Cust_Node.updateVal(1,sum2);
+        }
+
+
+        if (istep%nprint==0){
+            // mesh.outVTKFilehead(_path, istep);
+            // mesh.outVTKWgtd(_path, WHICHPARA::PHSFRAC, istep);
+            // mesh.outVTKAll(_path,WHICHPARA::PHSFRAC,istep);
+            cout<<"Done Step: "<<istep;
+            PFMTools::RunTimeCounter(dur, true);
+            dur = PFMTools::now();
+
+        }
     }
 
-    int istep = 5;
-    mesh.outVTKFilehead(ProjName, istep);
-    mesh.outVTKAve(ProjName, WHICHPARA::PHSFRAC, istep);
-    mesh.outVTKAll(ProjName, WHICHPARA::PHSFRAC, istep);
+    PFMTools::RunTimeCounter(start, true);
 
-
-    // for(int i = 0; i < 50; i++){
-    //     cout<<rand()%3-1<<endl;
-
-    // }
-
-    PFMTools::RunTimeCounter(start);
-    // auto duration = std::chrono::duration_cast< std::chrono::microseconds > (stop-start);
-    // cout<<"\nTime taken by programme: "<<( double )duration.count()/1e6<<" seconds"<<endl;
-    // cout<<"\nTime taken by programme: "<<( double )duration.count()/1e6<<" seconds"<<endl;
-
-    // system("pause");
     return 0;
 }
-

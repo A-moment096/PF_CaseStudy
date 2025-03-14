@@ -88,6 +88,15 @@ class BaseNode{
         }
     }
 
+    double getWeight(int _Index){
+        if (_Index < Num_Ent){
+            return Entrys.at(_Index).Weight;
+        }
+        else{
+            throw std::out_of_range("No Such Index");
+        }
+    }
+
     double getLap(int _Index){
         if (_Index < Num_Ent){
             return Entrys.at(_Index).Lap;
@@ -127,6 +136,37 @@ class BaseNode{
             throw std::out_of_range("No Such Index");
         }
     }
+    
+    double getVelo(int _Index, DIM whichdim){
+        if (_Index < Num_Ent){
+            switch (whichdim){
+            case DIM::DimX:
+                return Entrys.at(_Index).VeloX;
+                break;
+            case DIM::DimY:
+                return Entrys.at(_Index).VeloY;
+                break;
+            case DIM::DimZ:
+                return Entrys.at(_Index).VeloZ;
+                break;
+            default:
+                break;
+            }
+        }
+        else{
+            throw std::out_of_range("No Such Index");
+        }
+        return 1;
+    }
+
+    std::vector<double> getVelo(int _Index){
+        if (_Index < Num_Ent){
+            return Entrys.at(_Index).Velo;
+        }
+        else{
+            throw std::out_of_range("No Such Index");
+        }
+    }
 
     double getDVal(int _Index){
         if (_Index < Num_Ent){
@@ -138,9 +178,18 @@ class BaseNode{
     }
     /*************************************************************/
 
-    void updateVal(int _Index, double _con){
+    void updateVal(int _Index, double _val){
         if (_Index < Num_Ent && _Index >= 0){
-            Entrys.at(_Index).Val = _con;
+            Entrys.at(_Index).Val = _val;
+        }
+        else{
+            throw std::out_of_range("Not in entry list");
+        }
+    }
+
+    void updateWeight(int _Index, double _weight){
+        if (_Index < Num_Ent && _Index >= 0){
+            Entrys.at(_Index).Weight = _weight;
         }
         else{
             throw std::out_of_range("Not in entry list");
@@ -186,6 +235,36 @@ class BaseNode{
         }
     }
 
+    void updateVelo(DIM whichdim, int _Index, double _Velo){
+        if (_Index < Num_Ent && _Index >= 0){
+            switch (whichdim){
+            case DIM::DimX:
+                Entrys.at(_Index).VeloX = _Velo;
+                break;
+            case DIM::DimY:
+                Entrys.at(_Index).VeloY = _Velo;
+                break;
+            case DIM::DimZ:
+                Entrys.at(_Index).VeloZ = _Velo;
+                break;
+            default:
+                break;
+            }
+        }
+        else{
+            throw std::out_of_range("Not in entry list");
+        }
+    }
+
+    void updateVelo(int _Index, std::vector<double> _Velo){
+        if (_Index < Num_Ent && _Index >= 0){
+            Entrys.at(_Index).Velo = _Velo;
+        }
+        else{
+            throw std::out_of_range("Not in entry list");
+        }
+    }
+    
     void updateDVal(int _Index, double _DVal){
         if (_Index < Num_Ent && _Index >= 0){
             Entrys.at(_Index).DVal = _DVal;
