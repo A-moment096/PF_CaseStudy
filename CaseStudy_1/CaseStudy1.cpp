@@ -10,10 +10,10 @@ double dfdcon(double c){
 
 int main(){
     auto start( std::chrono::high_resolution_clock::now());
-    MeshNode ConNode; // Node Properties
-    SimulationMesh Box(ConNode);
+    MeshNode ConNode{}; // Node Properties
+    SimulationMesh Box({64,64,1},{1.0,1.0,1.0},1.0e-2,ConNode);
 
-    std::string path(toVTK_Path("../../CaseStudy1_Recurrence"));
+    std::string path(toVTK_Path("./"));
 
     for (auto &node : Box.SimuNodes){
         node.Con_Node.updateVal(0, 0.4+0.01-double(rand()%200)/10000);
@@ -36,7 +36,7 @@ int main(){
         for (auto &node : Box.SimuNodes){
             double cencon = node.getVal(WHICHPARA::CON,0);
             cencon += 0.01*node.Cust_Node.getLap(0);
-            Box.threshold(cencon, 0.0001, 0.9999);
+            PFMTools::threshold(cencon);
             node.Con_Node.updateVal(0, cencon);
         }
 
@@ -46,6 +46,6 @@ int main(){
         }
     }
 
-    RunTimeCounter(start);
+    PFMTools::RunTimeCounter(start,true);
     return 0;
 }

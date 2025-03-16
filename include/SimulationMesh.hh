@@ -41,6 +41,7 @@ public:
 
     SimulationMesh() = delete;
 
+    // SizeInfo: the size of mesh; StepInfo: the step size for three direction; TimeStep: time for each loop; Node: a node to initialize the mesh.
     SimulationMesh(std::vector<int> SizeInfo, std::vector<double> StepInfo, double _TimeStep, MeshNode Node) { // initial with size and SimuNodes.at(i)s
         Dimension = SizeInfo;
         StepLength = StepInfo;
@@ -649,8 +650,8 @@ public:
         outfile.close();
     }
 
-    template <typename T>
-    void outCSV(std::string _dirname, std::string _filename, std::vector<T> _FirstVals, std::vector<T> _SecondVals) {
+    template <typename T_1, typename T_2>
+    void outCSV(std::string _dirname, std::string _filename, std::vector<T_1> _FirstVals, std::vector<T_2> _SecondVals) {
 
         std::string filename(_dirname + "/" + _filename + ".csv");
         std::ofstream outfile;
@@ -797,9 +798,9 @@ inline void SimulationMesh::outVTKAve(std::string _dirname, WHICHPARA whichpara,
 
 inline void SimulationMesh::outVTKWgtd(std::string _dirname, WHICHPARA whichpara, int istep) {
 
-    char *filename = new char[_dirname.length() + 1];
-    std::strcpy(filename, _dirname.c_str());
-    std::sprintf(filename, "%s/time_%04d.vtk", filename, istep);
+    std::ostringstream filename_ss;
+    filename_ss << _dirname << "/time_" << istep << ".vtk";
+    std::string filename{filename_ss.str()};
 
     std::ofstream outfile;
     outfile.open(filename, std::ios::app);

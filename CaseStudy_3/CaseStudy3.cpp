@@ -4,85 +4,87 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-double phi(double c){
-    return c*c*c*(10-15*c+6*c*c);
+double phi(double c) {
+    return c * c * c * (10 - 15 * c + 6 * c * c);
 }
 
-double dfdcon(double c, double sum3, double sum2){
+double dfdcon(double c, double sum3, double sum2) {
     const double &&A = 16.0, &&B = 1.0;
-    return B*(2*c+4*sum3-6*sum2)-2*A*c*(3*c-2*c*c-1);
+    return B * (2 * c + 4 * sum3 - 6 * sum2) - 2 * A * c * (3 * c - 2 * c * c - 1);
 }
 
-double dfdeta(double c, double x, double sum2){
+double dfdeta(double c, double x, double sum2) {
     const double &&B = 1.0;
-    return 12*B*x*(-2*x+c*x+1-c+sum2);
+    return 12 * B * x * (-2 * x + c * x + 1 - c + sum2);
 }
 
-int main(){
+int main() {
     auto start = std::chrono::high_resolution_clock::now();
 
-/*******************************************************************************************************/
-    //Preparation
-    //about file path, constants, parameters, mesh and nodes, the  
-    std::string _path(toVTK_Path("../../NineGrainSint1"));
+    /*******************************************************************************************************/
+    // Preparation
+    // about file path, constants, parameters, mesh and nodes, the
+    std::string _path(toVTK_Path("."));
+    std::string _file_path("step_density");
 
     MeshNode node(PhaseNode(std::vector<PhaseEntry>(2, Def_PhsEnt)), Def_ConNode);
-    SimulationMesh mesh({ 100, 100, 1 }, { 0.5, 0.5, 1 }, 1e-4 ,node);
+    SimulationMesh mesh({100, 100, 1}, {0.5, 0.5, 1}, 1e-4, node);
 
     const double &&Dvol = 0.040, &&Dvap = 0.002, &&Dsurf = 16.0, &&Dgb = 8, &&coefm = 5.0, &&coefk = 2.0, &&coefl = 5.0;
 
-    const int &&nstep = 20000, &&nprint = 50; double &&dtime = 1e-4;
+    const int &&nstep = 20000, &&nprint = 50;
+    double &&dtime = 1e-4;
 
     std::vector<int> isteps;
     std::vector<double> vals;
-    isteps.reserve(nstep/nprint);
-    vals.reserve(nstep/nprint);
-/*******************************************************************************************************/
+    isteps.reserve(nstep / nprint);
+    vals.reserve(nstep / nprint);
+    /*******************************************************************************************************/
     // Initializer
     int simuflag = 1;
-    if (simuflag==0){
+    if (simuflag == 0) {
         double rad1 = 20, rad2 = 10;
-        int Px = mesh.MeshX/2, Py1 = 40, Py2 = 70;
+        int Px = mesh.MeshX / 2, Py1 = 40, Py2 = 70;
 
-    #pragma omp parallel for collapse(2)
-        for (int i = 0; i<mesh.MeshX; ++i){
-            for (int j = 0; j<mesh.MeshY; j++){
-                double &&dis1 = ((i-Px)*(i-Px)+(j-Py1)*(j-Py1));
-                double &&dis2 = ((i-Px)*(i-Px)+(j-Py2)*(j-Py2));
-                if (dis1<=rad1*rad1){
-                    mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
-                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 0, 0.9999);
+#pragma omp parallel for collapse(2)
+        for (int i = 0; i < mesh.MeshX; ++i) {
+            for (int j = 0; j < mesh.MeshY; j++) {
+                double &&dis1 = ((i - Px) * (i - Px) + (j - Py1) * (j - Py1));
+                double &&dis2 = ((i - Px) * (i - Px) + (j - Py2) * (j - Py2));
+                if (dis1 <= rad1 * rad1) {
+                    mesh.updateNodeVal(WHICHPARA::CON, {i, j, 0}, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC, {i, j, 0}, 0, 0.9999);
                 }
-                if (dis2<=rad2*rad2){
-                    mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
-                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 0, 0);
-                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 1, 0.9999);
+                if (dis2 <= rad2 * rad2) {
+                    mesh.updateNodeVal(WHICHPARA::CON, {i, j, 0}, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC, {i, j, 0}, 0, 0);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC, {i, j, 0}, 1, 0.9999);
                 }
             }
         }
     }
 
-    if (simuflag==1){
+    if (simuflag == 1) {
         double rad1 = 10;
-        int Px = mesh.MeshX/2, Py = mesh.MeshY/2;
+        int Px = mesh.MeshX / 2, Py = mesh.MeshY / 2;
 
-    #pragma omp parallel for collapse(2)
-        for (int i = 0; i<mesh.MeshX; ++i){
-            for (int j = 0; j<mesh.MeshY; j++){
-                double &&dis = ((i-Px)*(i-Px)+(j-Py)*(j-Py));
-                if (dis>=rad1*rad1&&i>=Px){
-                    mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
-                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 0, 0.9999);
+#pragma omp parallel for collapse(2)
+        for (int i = 0; i < mesh.MeshX; ++i) {
+            for (int j = 0; j < mesh.MeshY; j++) {
+                double &&dis = ((i - Px) * (i - Px) + (j - Py) * (j - Py));
+                if (dis >= rad1 * rad1 && i >= Px) {
+                    mesh.updateNodeVal(WHICHPARA::CON, {i, j, 0}, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC, {i, j, 0}, 0, 0.9999);
                 }
-                if (dis>=rad1*rad1&&i<=Px){
-                    mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
-                    mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, 1, 0.9999);
+                if (dis >= rad1 * rad1 && i <= Px) {
+                    mesh.updateNodeVal(WHICHPARA::CON, {i, j, 0}, 0, 0.9999);
+                    mesh.updateNodeVal(WHICHPARA::PHSFRAC, {i, j, 0}, 1, 0.9999);
                 }
             }
         }
     }
 
-    if (simuflag==2){
+    if (simuflag == 2) {
         mesh.addEntry(WHICHPARA::PHSFRAC, 7);
         vector<int> particleCoord(18, 0);
         particleCoord.at(0) = 29;
@@ -106,21 +108,20 @@ int main(){
         particleCoord.at(17) = 61;
         double rad1 = 10.0;
         double rad2 = 5.0;
-    #pragma omp parallel for collapse(2)
-        for (int coord = 0; coord<mesh.getNum_Ent(WHICHPARA::PHSFRAC); ++coord)
-            for (int i = 0; i<mesh.MeshX; ++i)
-                for (int j = 0; j<mesh.MeshY; ++j){
-                    double dis = (i-particleCoord.at(2*coord))*(i-particleCoord.at(2*coord))+(j-particleCoord.at(2*coord+1))*(j-particleCoord.at(2*coord+1));
-                    if (coord<5){
-                        if (dis<=rad1*rad1){
-                            mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
-                            mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, coord, 0.9999);
+#pragma omp parallel for collapse(2)
+        for (int coord = 0; coord < mesh.getNum_Ent(WHICHPARA::PHSFRAC); ++coord)
+            for (int i = 0; i < mesh.MeshX; ++i)
+                for (int j = 0; j < mesh.MeshY; ++j) {
+                    double dis = (i - particleCoord.at(2 * coord)) * (i - particleCoord.at(2 * coord)) + (j - particleCoord.at(2 * coord + 1)) * (j - particleCoord.at(2 * coord + 1));
+                    if (coord < 5) {
+                        if (dis <= rad1 * rad1) {
+                            mesh.updateNodeVal(WHICHPARA::CON, {i, j, 0}, 0, 0.9999);
+                            mesh.updateNodeVal(WHICHPARA::PHSFRAC, {i, j, 0}, coord, 0.9999);
                         }
-                    }
-                    else{
-                        if (dis<=rad2*rad2){
-                            mesh.updateNodeVal(WHICHPARA::CON,{ i, j, 0 }, 0, 0.9999);
-                            mesh.updateNodeVal(WHICHPARA::PHSFRAC,{ i, j, 0 }, coord, 0.9999);
+                    } else {
+                        if (dis <= rad2 * rad2) {
+                            mesh.updateNodeVal(WHICHPARA::CON, {i, j, 0}, 0, 0.9999);
+                            mesh.updateNodeVal(WHICHPARA::PHSFRAC, {i, j, 0}, coord, 0.9999);
                         }
                     }
                 }
@@ -128,27 +129,27 @@ int main(){
 
     int PhsNum = mesh(0).Phs_Node.Num_Ent;
 
-    for (int istep = 0; istep<=nstep; ++istep){
+    for (int istep = 0; istep <= nstep; ++istep) {
         mesh.Laplacian(WHICHPARA::CON);
         mesh.Laplacian(WHICHPARA::PHSFRAC);
 
-    #pragma omp parallel for
-        for (auto &node:mesh.SimuNodes){
+#pragma omp parallel for
+        for (auto &node : mesh.SimuNodes) {
             double c = node.Con_Node.getVal(0); // node.getVal().at(0)
             double &&dummy0 = std::move(dfdcon(c, node.sumPhsFrac3(), node.sumPhsFrac2()));
-            node.Cust_Node.updateVal(0, dummy0-0.5*coefm*(node.getLap(WHICHPARA::CON, 0)));
+            node.Cust_Node.updateVal(0, dummy0 - 0.5 * coefm * (node.getLap(WHICHPARA::CON, 0)));
         }
 
-    #pragma omp parallel for collapse(2)
-        for (auto &node:mesh.SimuNodes){
-            for (int i = 0; i<PhsNum; ++i){
+#pragma omp parallel for collapse(2)
+        for (auto &node : mesh.SimuNodes) {
+            for (int i = 0; i < PhsNum; ++i) {
                 double x = node.Phs_Node.getVal(i);
                 double c = node.Con_Node.getVal(0); // node.getVal().at(0)
 
                 double &&dummy1 = std::move(dfdeta(c, x, node.sumPhsFrac2()));
-                double &&dummy2 = std::move(x-dtime*coefl*(dummy1-0.5*coefk*node.Phs_Node.getLap(i)));
+                double &&dummy2 = std::move(x - dtime * coefl * (dummy1 - 0.5 * coefk * node.Phs_Node.getLap(i)));
 
-                mesh.threshold(dummy2, 0.0001, 0.9999);
+                PFMTools::threshold(dummy2, 0.0001, 0.9999);
                 node.Phs_Node.updateVal(i, dummy2);
             }
         }
@@ -157,32 +158,31 @@ int main(){
 
         double Diffu = 0;
 
-    #pragma omp parallel for
-        for (auto &node:mesh.SimuNodes){
-            double sum = node.sumPhsFrac()*node.sumPhsFrac()-node.sumPhsFrac2();
+#pragma omp parallel for
+        for (auto &node : mesh.SimuNodes) {
+            double sum = node.sumPhsFrac() * node.sumPhsFrac() - node.sumPhsFrac2();
             double c = node.Con_Node.getVal(0);
-            Diffu = Dvol*(phi(c))+Dvap*(1-phi(c))+Dsurf*c*(1-c)+Dgb*sum;
+            Diffu = Dvol * (phi(c)) + Dvap * (1 - phi(c)) + Dsurf * c * (1 - c) + Dgb * sum;
 
-            double &&dumy = std::move(c+dtime*Diffu*node.getLap(WHICHPARA::CUSTOM, 0));
+            double &&dumy = std::move(c + dtime * Diffu * node.getLap(WHICHPARA::CUSTOM, 0));
 
-            mesh.threshold(dumy, 0.0001, 0.9999);
+            PFMTools::threshold(dumy, 0.0001, 0.9999);
 
             node.Con_Node.updateVal(0, dumy);
         }
 
-        if (fmod(istep, nprint)==0){
+        if (fmod(istep, nprint) == 0) {
             mesh.outVTK(_path, istep);
             isteps.push_back(istep);
             vals.push_back(mesh.CalDensity());
-            cout<<"Done Step: "<<istep;
-            RunTimeCounter(start);
+            cout << "Done Step: " << istep;
+            PFMTools::RunTimeCounter(start, true);
             // cout<<mesh.CalDensity()<<endl;
         }
     }
 
-    mesh.outCSV(_path, "step_density", isteps, vals);
+    mesh.outCSV<int, double>(_path, _file_path, isteps, vals);
 
-    RunTimeCounter(start);
+    PFMTools::RunTimeCounter(start, true);
     return 0;
 }
-

@@ -39,18 +39,18 @@ const std::vector<std::string> element_list = {
     return out<<element_list[(int)_element];
 }
 
-class BaseEntry{
-    public:
+class BaseEntry {
+public:
     int Index = 0;
     double Val = 0;
     double Weight = 1;
-    
+
     double Lap = 0;
-    std::vector<double> Grad{0.0,0.0,0.0};
+    std::vector<double> Grad{0.0, 0.0, 0.0};
     double &GradX = Grad.at(0);
     double &GradY = Grad.at(1);
     double &GradZ = Grad.at(2);
-    std::vector<double> Velo{0.0,0.0,0.0};
+    std::vector<double> Velo{0.0, 0.0, 0.0};
     double &VeloX = Velo.at(0);
     double &VeloY = Velo.at(1);
     double &VeloZ = Velo.at(2);
@@ -59,11 +59,11 @@ class BaseEntry{
 
     /*************************************************************/
 
-    BaseEntry():Index(0){}
+    BaseEntry() : Index(0) {}
 
-    BaseEntry(double _val):Index(0), Val(_val){}
+    BaseEntry(double _val) : Index(0), Val(_val) {}
 
-    BaseEntry(const BaseEntry &_Entry){
+    BaseEntry(const BaseEntry &_Entry) {
         Index = _Entry.Index;
         Weight = _Entry.Weight;
         Val = _Entry.Val;
@@ -80,7 +80,7 @@ class BaseEntry{
         DVal = _Entry.DVal;
     }
 
-    BaseEntry &operator= (const BaseEntry &_Entry){
+    BaseEntry &operator=(const BaseEntry &_Entry) {
         Index = _Entry.Index;
         Weight = _Entry.Weight;
         Val = _Entry.Val;
@@ -89,45 +89,43 @@ class BaseEntry{
         GradX = _Entry.GradX;
         GradY = _Entry.GradY;
         GradZ = _Entry.GradZ;
-        
+
         VeloX = _Entry.VeloX;
         VeloY = _Entry.VeloY;
         VeloZ = _Entry.VeloZ;
-        
+
         DVal = _Entry.DVal;
         return *this;
     }
 
-    ~BaseEntry(){
+    ~BaseEntry() {
         Grad.clear();
     }
 
     /*************************************************************/
-
-
 };
 
-class ConEntry : public BaseEntry{
-    public:
+class ConEntry : public BaseEntry {
+public:
     ELEMENT Element;
     using BaseEntry::BaseEntry;
 
-}Def_ConEnt;
+} Def_ConEnt;
 
-class PhaseEntry : public BaseEntry{
-    public:
+class PhaseEntry : public BaseEntry {
+public:
     using BaseEntry::BaseEntry;
 
-}Def_PhsEnt;
+} Def_PhsEnt;
 
-class CustEntry : public BaseEntry{
-    public:
+class CustEntry : public BaseEntry {
+public:
     using BaseEntry::BaseEntry;
 };
 
-class TempEntry : public BaseEntry{
-    public:
-    using BaseEntry::BaseEntry;    
-}Def_TempEnt;
+class TempEntry : public BaseEntry {
+public:
+    using BaseEntry::BaseEntry;
+} Def_TempEnt;
 
 #endif
